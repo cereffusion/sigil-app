@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Working</title>
+<style>
+  :root {
+    --bg: #0b0a10;
+    --panel: #15131e;
+    --ink: #e8e2d0;
+    --gold: #c9a84c;
+    --dim: #6f6a7e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(ellipse at 50% 30%, #181425 0%, var(--bg) 70%);
+    color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+  .nav { margin-bottom: 1.4rem; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; }
+  .nav a { color: var(--dim); text-decoration: none; }
+  .nav a.here { color: var(--gold); }
+  .nav a:hover { color: var(--ink); }
+  h1 {
+    font-weight: normal;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-size: 1.4rem;
+    color: var(--gold);
+    margin-bottom: 0.3rem;
+  }
+  .subtitle { color: var(--dim); font-size: 0.85rem; font-style: italic; margin-bottom: 1.4rem; }
+  .toward {
+    color: var(--ink);
+    font-size: 0.85rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid #2c2840;
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    background: var(--panel);
+  }
+  .toward b { color: var(--gold); font-weight: normal; }
+  .finder {
+    width: 100%;
+    max-width: 680px;
+    background: var(--panel);
+    border: 1px solid #2c2840;
+    border-radius: 8px;
+    padding: 1.2rem 1.3rem;
+    margin-bottom: 1.4rem;
+  }
+  .q { margin-bottom: 1rem; }
+  .q:last-of-type { margin-bottom: 1.2rem; }
+  .q-label { color: var(--dim); font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.55rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .chip-btn {
+    background: transparent;
+    border: 1px solid #3a3550;
+    color: var(--dim);
+    font-family: inherit;
+    font-size: 0.82rem;
+    letter-spacing: 0.05em;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chip-btn:hover { border-color: var(--gold); color: var(--ink); }
+  .chip-btn.on { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+  button.act {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: inherit;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  button.act:hover { background: var(--gold); color: var(--bg); }
+  button.act.secondary { border-color: #3a3550; color: var(--dim); }
+  button.act.secondary:hover { background: #3a3550; color: var(--ink); }
+  .finder-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .reading {
+    color: var(--dim);
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-bottom: 1.2rem;
+    min-height: 1em;
+    text-align: center;
+  }
+  .reading b { color: var(--gold); font-weight: normal; }
+  #results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 0.9rem;
+    width: 100%;
+    max-width: 980px;
+  }
+  .section {
+    grid-column: 1 / -1;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2c2840;
+    padding-bottom: 0.4rem;
+    margin-top: 0.9rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid #2c2840;
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+  }
+  .card h2 {
+    font-weight: normal;
+    font-size: 1.12rem;
+    letter-spacing: 0.06em;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .badge {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+  .badge.writing { color: #c9a84c; border-color: #c9a84c; }
+  .badge.element { color: #e0894a; border-color: #e0894a; }
+  .badge.vision  { color: #9b8cf0; border-color: #9b8cf0; }
+  .badge.lunar   { color: #b5d8ff; border-color: #b5d8ff; }
+  .badge.object  { color: #9fe2cf; border-color: #9fe2cf; }
+  .goals { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-left: auto; }
+  .goal-tag { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+  .blurb { font-size: 0.88rem; line-height: 1.45; margin-bottom: 0.7rem; }
+  .meta { font-size: 0.76rem; color: var(--dim); line-height: 1.5; margin-bottom: 0.55rem; }
+  .meta b { color: var(--ink); font-weight: normal; }
+  ol.steps { margin: 0 0 0.6rem 1.1rem; padding: 0; }
+  ol.steps li { font-size: 0.83rem; line-height: 1.5; margin-bottom: 0.25rem; }
+  .card-link { font-size: 0.76rem; }
+  .card-link a { color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--gold); }
+  .empty { color: var(--dim); font-style: italic; text-align: center; grid-column: 1 / -1; padding: 2rem 0; }
+  .hint { color: var(--dim); font-size: 0.72rem; margin-top: 1.6rem; font-style: italic; text-align: center; max-width: 560px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a href="index.html">Sigil Forge</a> &nbsp;·&nbsp;
+  <a href="invoke.html">Invocation Guide</a> &nbsp;·&nbsp;
+  <a href="manifest.html" class="here">The Working</a>
+</div>
+
+<h1>The Working</h1>
+<div class="subtitle">methods for giving an intention form and motion</div>
+
+<div class="toward" id="toward" style="display:none"></div>
+
+<div class="finder">
+  <div class="q">
+    <div class="q-label">What do you want the working to do?</div>
+    <div class="chips" id="q-goal">
+      <button class="chip-btn" data-val="attract">Attract / draw something in</button>
+      <button class="chip-btn" data-val="release">Release / let something go</button>
+      <button class="chip-btn" data-val="reflect">Reflect / align myself</button>
+    </div>
+  </div>
+  <div class="q">
+    <div class="q-label">Drawn to any of these? (optional, pick any)</div>
+    <div class="chips" id="q-family">
+      <button class="chip-btn" data-val="writing">Word &amp; writing</button>
+      <button class="chip-btn" data-val="element">Fire &amp; element</button>
+      <button class="chip-btn" data-val="vision">Visualization</button>
+      <button class="chip-btn" data-val="lunar">Lunar timing</button>
+      <button class="chip-btn" data-val="object">Object &amp; ritual</button>
+    </div>
+  </div>
+  <div class="q">
+    <div class="q-label">What rhythm suits you?</div>
+    <div class="chips" id="q-rhythm">
+      <button class="chip-btn" data-val="one-time">A single ritual</button>
+      <button class="chip-btn" data-val="daily">A daily practice</button>
+      <button class="chip-btn" data-val="either">Either is fine</button>
+    </div>
+  </div>
+  <div class="finder-actions">
+    <button class="act" id="reveal">Reveal methods</button>
+    <button class="act secondary" id="browse">Browse all</button>
+  </div>
+</div>
+
+<div class="reading" id="reading"></div>
+<div id="results"></div>
+
+<div class="hint" id="moon"></div>
+<div class="hint">
+  Methods drawn from chaos magic, folk practice, New Thought, and modern
+  manifestation culture. For reflection and inspiration — the work each describes
+  is your own focused intention, given a shape to move through.
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- the methods ----
+  // family: writing | element | vision | lunar | object
+  // goals:  attract | release | reflect
+  // rhythm: one-time | daily | either
+  var METHODS = [
+    { name: 'Sigil Charging', family: 'writing', goals: ['attract', 'release'], rhythm: 'one-time',
+      blurb: 'Distill a phrase of intent into a single glyph, charge it with focus, then deliberately forget it — letting the desire sink past the conscious mind.',
+      materials: 'A phrase, paper or a screen, a quiet moment of intense focus.',
+      timing: 'Any time; traditionally charged at a peak of emotion or concentration.',
+      steps: [
+        'Write your desire as a present-tense statement.',
+        'Strip the vowels and repeated letters; fuse what remains into one glyph.',
+        'Fix your full attention on it until everything else falls away.',
+        'Release it — destroy or put it away, and let yourself forget it.'
+      ],
+      link: { href: 'index.html', label: 'Forge one in Sigil Forge →' } },
+
+    { name: 'Scripting', family: 'writing', goals: ['attract', 'reflect'], rhythm: 'either',
+      blurb: 'Write your desire in vivid detail as though it has already happened, in the present tense and soaked in gratitude.',
+      materials: 'A journal or document, a few unhurried minutes.',
+      timing: 'Morning to set the tone, or night to seed the subconscious before sleep.',
+      steps: [
+        'Begin "I am so grateful now that…".',
+        'Describe the fulfilled wish in sensory detail — what you see, feel, who is there.',
+        'Stay in the feeling of it being already real.',
+        'Close, and step back into your day without bargaining for it.'
+      ] },
+
+    { name: 'The 369 Method', family: 'writing', goals: ['attract'], rhythm: 'daily',
+      blurb: 'Write your intention three times in the morning, six times midday, and nine times at night — a number rhythm borrowed from Tesla’s mysticism.',
+      materials: 'A dedicated notebook, a pen, three moments a day.',
+      timing: 'Daily, commonly for 33 or 45 days.',
+      steps: [
+        'Phrase one short, present-tense affirmation.',
+        'On waking, write it 3 times.',
+        'Midday, write it 6 times.',
+        'Before sleep, write it 9 times. Repeat daily.'
+      ] },
+
+    { name: 'The 55x5 Method', family: 'writing', goals: ['attract'], rhythm: 'daily',
+      blurb: 'Write a single affirmation 55 times in one sitting, five days running — repetition meant to wear a groove into belief.',
+      materials: 'Paper, a pen, about ten focused minutes a day.',
+      timing: 'Five consecutive days.',
+      steps: [
+        'Choose one concise, present-tense affirmation.',
+        'Write it 55 times in a single unbroken sitting.',
+        'Stay present to the words, not mechanical.',
+        'Repeat for five days, then release it.'
+      ] },
+
+    { name: 'Petition Paper', family: 'writing', goals: ['attract', 'release'], rhythm: 'one-time',
+      blurb: 'Write your desire onto paper to serve as the heart of a ritual — to be burned, buried, carried, or dissolved.',
+      materials: 'A slip of clean paper, a pen; optionally a candle, soil, or water.',
+      timing: 'Any; often paired with a moon phase or a fire working.',
+      steps: [
+        'Write the petition clearly and specifically.',
+        'Some fold it toward themselves to draw in, away to send off.',
+        'Speak it aloud once.',
+        'Carry it, or release it through fire, earth, or water.'
+      ] },
+
+    { name: 'Burning an Intention', family: 'element', goals: ['release', 'attract'], rhythm: 'one-time',
+      blurb: 'Write the intention, then burn it — letting the rising smoke carry the wish outward as the paper turns to ash.',
+      materials: 'Paper, a pen, a flame, a fireproof bowl or sink.',
+      timing: 'Powerful at New Year’s, a new moon (to send) or full moon (to release).',
+      steps: [
+        'Write the desire or the thing you are releasing.',
+        'Read it aloud, then touch it to the flame.',
+        'Drop it into the bowl and watch it burn completely.',
+        'Let the smoke rise; rinse the ash away or scatter it to the wind.'
+      ] },
+
+    { name: 'Planting an Intention', family: 'element', goals: ['attract'], rhythm: 'one-time',
+      blurb: 'Bury a written intention in the earth, often with a seed, so the desire "grows" as the plant does.',
+      materials: 'Paper (ideally plain, biodegradable), a seed or seedling, soil or a pot.',
+      timing: 'Spring or a new moon, when things are meant to begin.',
+      steps: [
+        'Write the intention on a small slip of paper.',
+        'Bury it in soil together with a seed.',
+        'Water it and place it in the light.',
+        'Tend the plant as the living form of your intention.'
+      ] },
+
+    { name: 'Water Release', family: 'element', goals: ['release'], rhythm: 'one-time',
+      blurb: 'Give what you are letting go to water — dissolved on soluble paper or carried off on a current.',
+      materials: 'Water-soluble or plain paper, a bowl or a moving body of water.',
+      timing: 'A waning or full moon, for release.',
+      steps: [
+        'Write what you wish to release.',
+        'Lower it into the water with intention.',
+        'Watch it dissolve or float away.',
+        'Pour the water onto the earth, or let the current take it.'
+      ] },
+
+    { name: 'Candle Working', family: 'element', goals: ['attract', 'release'], rhythm: 'one-time',
+      blurb: 'Dress and burn a candle in the color of your aim — carving in words and letting it burn down while you hold focus.',
+      materials: 'A candle in a fitting color, optionally oil and a pin to carve.',
+      timing: 'Burned in one sitting, or a little each day until spent.',
+      steps: [
+        'Choose a color: white to cleanse, red for love, green or gold for money, black for protection.',
+        'Carve your word or name into the wax.',
+        'Dress it lightly with oil if you have it, drawing toward or away from you.',
+        'Light it, hold your intention, and let it burn safely down.'
+      ],
+      link: { href: 'invoke.html', label: 'Color meanings in the Invocation Guide →' } },
+
+    { name: 'Vision Board', family: 'vision', goals: ['attract', 'reflect'], rhythm: 'daily',
+      blurb: 'Gather images of the life you intend into one collage, placed where your eyes land on it daily.',
+      materials: 'Images, a board or wall (physical or digital), time to arrange.',
+      timing: 'Built once, absorbed daily; refreshed when your aims shift.',
+      steps: [
+        'Collect images and words that embody your desire.',
+        'Arrange them on a board with care.',
+        'Hang it where you will see it every day.',
+        'Pause on it daily and feel the life it shows.'
+      ] },
+
+    { name: 'Acting As If', family: 'vision', goals: ['attract'], rhythm: 'daily',
+      blurb: 'Vividly imagine living the fulfilled wish, engaging every sense until it feels presently real.',
+      materials: 'Only your attention and a few quiet minutes.',
+      timing: 'Daily; especially potent in the drowsy state before sleep.',
+      steps: [
+        'Settle and relax your body.',
+        'Step into the scene of the wish already fulfilled.',
+        'Engage all five senses — sight, sound, touch, scent, taste.',
+        'Rest in the feeling, then carry a trace of it into your day.'
+      ] },
+
+    { name: 'Affirmation & Meditation', family: 'vision', goals: ['reflect', 'attract'], rhythm: 'daily',
+      blurb: 'Repeat a chosen statement, spoken or silent, to gradually reshape belief and quiet doubt.',
+      materials: 'A short affirmation; optionally a quiet space to sit.',
+      timing: 'Daily, morning and evening are traditional anchors.',
+      steps: [
+        'Write one positive, present-tense affirmation.',
+        'Sit quietly and breathe a few rounds to settle.',
+        'Repeat the affirmation slowly, meaning each word.',
+        'Notice resistance without fighting it, and continue.'
+      ] },
+
+    { name: 'Living in the End', family: 'vision', goals: ['attract'], rhythm: 'daily',
+      blurb: 'Neville Goddard’s practice: each night, fall asleep inside the single feeling of the wish already fulfilled.',
+      materials: 'One imagined scene that implies the wish is done.',
+      timing: 'Nightly, in the threshold state as you drift off.',
+      steps: [
+        'Choose a brief scene that would only be true if your wish were real.',
+        'As you lie down, replay it until it feels natural.',
+        'Loop it gently, soaked in the emotion of fulfillment.',
+        'Fall asleep within the feeling of the wish accomplished.'
+      ] },
+
+    { name: 'New Moon Intentions', family: 'lunar', goals: ['attract'], rhythm: 'one-time',
+      blurb: 'Set and plant intentions as the dark moon begins to wax — riding the building light to grow what you start.',
+      materials: 'A journal; optionally a candle and a quiet ritual.',
+      timing: 'On or just after the new moon, monthly.',
+      steps: [
+        'On the new moon, name what you wish to begin or grow.',
+        'Write each intention as if it is already underway.',
+        'Speak them aloud or seal them with a candle.',
+        'Revisit as the moon waxes toward full.'
+      ] },
+
+    { name: 'Full Moon Release', family: 'lunar', goals: ['release'], rhythm: 'one-time',
+      blurb: 'At the full moon, name and let go of what blocks you, releasing it as the moon begins to wane.',
+      materials: 'Paper and pen; a safe flame or bowl of water to release into.',
+      timing: 'On the full moon, monthly.',
+      steps: [
+        'Under the full moon, write what you are ready to release.',
+        'Read it aloud and feel its weight name itself.',
+        'Burn it or dissolve it in water.',
+        'As the moon wanes, let the habit or hurt wane with it.'
+      ] },
+
+    { name: 'Moon Journaling', family: 'lunar', goals: ['reflect'], rhythm: 'daily',
+      blurb: 'Track desires, moods, and progress across the lunar cycle, aligning your inner rhythm with the moon’s.',
+      materials: 'A journal kept over a full cycle (about a month).',
+      timing: 'Daily or at each of the four phases.',
+      steps: [
+        'Note the moon’s phase each time you write.',
+        'At the new moon, set intentions; at the full, take stock.',
+        'Record how your energy and mood move with the cycle.',
+        'Over months, read the patterns the cycle reveals.'
+      ] },
+
+    { name: 'Charm Bag', family: 'object', goals: ['attract'], rhythm: 'one-time',
+      blurb: 'Bundle herbs, stones, and a written intent into a small bag to carry your working with you.',
+      materials: 'A cloth pouch, matching herbs and stones, a written petition.',
+      timing: 'Assembled once; re-charged periodically by handling it.',
+      steps: [
+        'Choose herbs and stones whose lore fits your aim.',
+        'Add a small written petition.',
+        'Tie the bag closed while holding your intention.',
+        'Carry it, and renew it now and then with breath or touch.'
+      ] },
+
+    { name: 'Crystal Grid', family: 'object', goals: ['attract'], rhythm: 'one-time',
+      blurb: 'Arrange stones in a deliberate geometric pattern around a written intent to focus and amplify it.',
+      materials: 'Several crystals, a written intention, a flat surface.',
+      timing: 'Set up and left in place for days or weeks.',
+      steps: [
+        'Place your written intention at the center.',
+        'Set a focal stone on top of it.',
+        'Arrange the rest in a symmetrical pattern around it.',
+        'Activate by tracing the connections, and leave it standing.'
+      ] },
+
+    { name: 'Knot Magic', family: 'object', goals: ['attract', 'release'], rhythm: 'one-time',
+      blurb: 'Tie your intention into a cord, knot by knot, binding the working into the rope to release later — or keep.',
+      materials: 'A length of cord or string.',
+      timing: 'Any; the classic is a nine-knot pattern.',
+      steps: [
+        'Hold the cord and fix on your intention.',
+        'Tie each knot with a line of the old charm — "by knot of one, the spell’s begun…".',
+        'Pour the intention into each knot as you tie it.',
+        'Keep the cord to hold the working, or untie a knot to release it.'
+      ] },
+
+    { name: 'Deity Invocation', family: 'object', goals: ['attract', 'reflect'], rhythm: 'either',
+      blurb: 'Petition a god, saint, or spirit whose domain matches your aim, with offerings and respectful address.',
+      materials: 'A candle, an offering suited to the figure, their name and words.',
+      timing: 'On the figure’s sacred day where one is known.',
+      steps: [
+        'Choose a figure whose domain fits your desire.',
+        'Set out an offering they are known to favor.',
+        'Address them by name and state your petition plainly.',
+        'Give thanks, and follow through on anything you promised.'
+      ],
+      link: { href: 'invoke.html', label: 'Find a figure in the Invocation Guide →' } }
+  ];
+
+  var FAMILY_NAME = {
+    writing: 'Word & Writing',
+    element: 'Fire & Element',
+    vision: 'Visualization',
+    lunar: 'Lunar Timing',
+    object: 'Object & Ritual'
+  };
+  var FAMILY_ORDER = ['writing', 'element', 'vision', 'lunar', 'object'];
+  var GOAL_NAME = { attract: 'attract', release: 'release', reflect: 'reflect' };
+
+  // ---- selection state ----
+  var sel = { goal: null, family: {}, rhythm: null };
+  var phrase = new URLSearchParams(location.search).get('phrase');
+
+  // single-select group
+  function wireSingle(groupId, key) {
+    var group = document.getElementById(groupId);
+    group.querySelectorAll('.chip-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var val = btn.getAttribute('data-val');
+        if (sel[key] === val) {
+          sel[key] = null;
+          btn.classList.remove('on');
+        } else {
+          sel[key] = val;
+          group.querySelectorAll('.chip-btn').forEach(function (b) { b.classList.remove('on'); });
+          btn.classList.add('on');
+        }
+      });
+    });
+  }
+  // multi-select group
+  function wireMulti(groupId, key) {
+    document.getElementById(groupId).querySelectorAll('.chip-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var val = btn.getAttribute('data-val');
+        if (sel[key][val]) { delete sel[key][val]; btn.classList.remove('on'); }
+        else { sel[key][val] = 1; btn.classList.add('on'); }
+      });
+    });
+  }
+  wireSingle('q-goal', 'goal');
+  wireMulti('q-family', 'family');
+  wireSingle('q-rhythm', 'rhythm');
+
+  function carryPhrase(href) {
+    if (!phrase) return href;
+    return href + '?phrase=' + encodeURIComponent(phrase);
+  }
+
+  function makeCard(m) {
+    var card = document.createElement('div');
+    card.className = 'card';
+
+    var goalTags = m.goals.map(function (g) {
+      return '<span class="goal-tag">' + GOAL_NAME[g] + '</span>';
+    }).join(' · ');
+
+    var stepsHtml = m.steps.map(function (s) { return '<li>' + s + '</li>'; }).join('');
+
+    var linkHtml = '';
+    if (m.link) {
+      linkHtml = '<div class="card-link"><a href="' + carryPhrase(m.link.href) + '">' +
+                 m.link.label + '</a></div>';
+    }
+
+    card.innerHTML =
+      '<h2>' + m.name +
+        ' <span class="badge ' + m.family + '">' + FAMILY_NAME[m.family] + '</span>' +
+        '<span class="goals">' + goalTags + '</span></h2>' +
+      '<div class="blurb">' + m.blurb + '</div>' +
+      '<div class="meta"><b>You need:</b> ' + m.materials + '</div>' +
+      '<div class="meta"><b>Timing:</b> ' + m.timing + '</div>' +
+      '<ol class="steps">' + stepsHtml + '</ol>' +
+      linkHtml;
+    return card;
+  }
+
+  function reveal() {
+    var reading = document.getElementById('reading');
+    var results = document.getElementById('results');
+    results.innerHTML = '';
+
+    if (!sel.goal) {
+      reading.innerHTML = 'choose what you want the working to do, above';
+      return;
+    }
+
+    var families = Object.keys(sel.family);
+    var scored = METHODS
+      .filter(function (m) { return m.goals.indexOf(sel.goal) !== -1; })
+      .map(function (m) {
+        var score = 3;
+        if (families.length && families.indexOf(m.family) !== -1) score += 2;
+        if (sel.rhythm && sel.rhythm !== 'either') {
+          if (m.rhythm === sel.rhythm) score += 1;
+          else if (m.rhythm === 'either') score += 0.5;
+        }
+        return { m: m, score: score };
+      });
+
+    // if specific families chosen, keep only those; otherwise keep all matching the goal
+    if (families.length) {
+      scored = scored.filter(function (s) { return families.indexOf(s.m.family) !== -1; });
+    }
+
+    scored.sort(function (a, b) { return b.score - a.score; });
+
+    if (scored.length === 0) {
+      results.innerHTML = '<div class="empty">no method matched — loosen your choices and try again</div>';
+      reading.innerHTML = '';
+      return;
+    }
+
+    var bits = ['working to <b>' + GOAL_NAME[sel.goal] + '</b>'];
+    if (families.length) bits.push('via <b>' + families.map(function (f) { return FAMILY_NAME[f]; }).join('</b>, <b>') + '</b>');
+    if (sel.rhythm && sel.rhythm !== 'either') bits.push('as <b>' + (sel.rhythm === 'daily' ? 'a daily practice' : 'a single ritual') + '</b>');
+    reading.innerHTML = bits.join(' · ');
+
+    scored.forEach(function (s) { results.appendChild(makeCard(s.m)); });
+  }
+
+  function browse() {
+    var reading = document.getElementById('reading');
+    var results = document.getElementById('results');
+    results.innerHTML = '';
+    reading.innerHTML = 'every method — <b>' + METHODS.length + '</b> in all';
+
+    FAMILY_ORDER.forEach(function (fam) {
+      var group = METHODS.filter(function (m) { return m.family === fam; });
+      if (!group.length) return;
+      var header = document.createElement('div');
+      header.className = 'section';
+      header.textContent = FAMILY_NAME[fam] + ' · ' + group.length;
+      results.appendChild(header);
+      group.forEach(function (m) { results.appendChild(makeCard(m)); });
+    });
+  }
+
+  document.getElementById('reveal').addEventListener('click', reveal);
+  document.getElementById('browse').addEventListener('click', browse);
+
+  // ---- moon phase for today (for the lunar-timing methods) ----
+  function moonPhase(date) {
+    // days since a known new moon (2000-01-06), synodic month 29.53059 days
+    var synodic = 29.530588853;
+    var ref = Date.UTC(2000, 0, 6, 18, 14) / 86400000;
+    var now = date.getTime() / 86400000;
+    var age = (((now - ref) % synodic) + synodic) % synodic;
+    var pct = age / synodic;
+    var name, motion;
+    if (pct < 0.03 || pct > 0.97) { name = 'New Moon'; motion = 'a doorway — set new intentions'; }
+    else if (pct < 0.22) { name = 'Waxing Crescent'; motion = 'waxing — build and draw in'; }
+    else if (pct < 0.28) { name = 'First Quarter'; motion = 'waxing — push through resistance'; }
+    else if (pct < 0.47) { name = 'Waxing Gibbous'; motion = 'waxing — refine and amplify'; }
+    else if (pct < 0.53) { name = 'Full Moon'; motion = 'the peak — charge or release'; }
+    else if (pct < 0.72) { name = 'Waning Gibbous'; motion = 'waning — give thanks, share'; }
+    else if (pct < 0.78) { name = 'Last Quarter'; motion = 'waning — release and forgive'; }
+    else { name = 'Waning Crescent'; motion = 'waning — rest, banish, clear'; }
+    return name + ' — ' + motion;
+  }
+  document.getElementById('moon').innerHTML =
+    'Tonight the moon is in its <b style="color:var(--gold)">' + moonPhase(new Date()) + '</b>.';
+
+  // ---- carry an incoming phrase from the other tabs ----
+  if (phrase) {
+    var toward = document.getElementById('toward');
+    toward.style.display = 'inline-block';
+    toward.innerHTML = 'Working toward: <b>' + phrase.replace(/[<>]/g, '') + '</b>';
+  }
+})();
+</script>
+</body>
+</html>

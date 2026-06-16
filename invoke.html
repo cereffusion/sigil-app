@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invocation Guide</title>
+<style>
+  :root {
+    --bg: #0b0a10;
+    --panel: #15131e;
+    --ink: #e8e2d0;
+    --gold: #c9a84c;
+    --dim: #6f6a7e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(ellipse at 50% 30%, #181425 0%, var(--bg) 70%);
+    color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+  .nav { margin-bottom: 1.4rem; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; }
+  .nav a { color: var(--dim); text-decoration: none; }
+  .nav a.here { color: var(--gold); }
+  .nav a:hover { color: var(--ink); }
+  h1 {
+    font-weight: normal;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-size: 1.4rem;
+    color: var(--gold);
+    margin-bottom: 0.3rem;
+  }
+  .subtitle { color: var(--dim); font-size: 0.85rem; font-style: italic; margin-bottom: 1.5rem; }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+    max-width: 720px;
+    width: 100%;
+  }
+  input[type="text"] {
+    flex: 1 1 300px;
+    background: var(--panel);
+    border: 1px solid #2c2840;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 4px;
+    outline: none;
+    letter-spacing: 0.05em;
+  }
+  input[type="text"]:focus { border-color: var(--gold); }
+  button {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: inherit;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.65rem 1.1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  button:hover { background: var(--gold); color: var(--bg); }
+  button.secondary { border-color: #3a3550; color: var(--dim); }
+  button.secondary:hover { background: #3a3550; color: var(--ink); }
+  .reading {
+    color: var(--dim);
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-bottom: 1.4rem;
+    min-height: 1.2em;
+    text-align: center;
+  }
+  .reading b { color: var(--gold); font-weight: normal; }
+  #results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.9rem;
+    width: 100%;
+    max-width: 960px;
+  }
+  .section {
+    grid-column: 1 / -1;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2c2840;
+    padding-bottom: 0.4rem;
+    margin-top: 0.9rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid #2c2840;
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+  }
+  .card h2 {
+    font-weight: normal;
+    font-size: 1.15rem;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+  .badge.goddess { color: #f7c6d9; border-color: #f7c6d9; }
+  .badge.god     { color: #c9a84c; border-color: #c9a84c; }
+  .badge.angel   { color: #b5d8ff; border-color: #b5d8ff; }
+  .badge.demon   { color: #e06060; border-color: #e06060; }
+  .badge.orisha  { color: #9fe2cf; border-color: #9fe2cf; }
+  .badge.saint   { color: #e8e2d0; border-color: #e8e2d0; }
+  .badge.fictional { color: #a8f08a; border-color: #a8f08a; }
+  .origin { color: var(--dim); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; margin: 0.2rem 0 0.5rem; }
+  .blurb { font-size: 0.88rem; line-height: 1.45; margin-bottom: 0.6rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.55rem; }
+  .chip {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--dim);
+    border: 1px solid #2c2840;
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+  }
+  .chip.hit { color: var(--gold); border-color: var(--gold); }
+  .approach { color: var(--dim); font-size: 0.78rem; font-style: italic; line-height: 1.45; }
+  .approach b { color: var(--gold); font-weight: normal; font-style: normal; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; }
+  .empty { color: var(--dim); font-style: italic; text-align: center; grid-column: 1 / -1; padding: 2rem 0; }
+  .sigil-link { margin-top: 1.4rem; }
+  .sigil-link a {
+    color: var(--gold);
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 2px;
+  }
+  .hint { color: var(--dim); font-size: 0.72rem; margin-top: 1.6rem; font-style: italic; text-align: center; max-width: 560px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a href="index.html">Sigil Forge</a> &nbsp;·&nbsp;
+  <a href="invoke.html" class="here">Invocation Guide</a> &nbsp;·&nbsp;
+  <a href="manifest.html">The Working</a>
+</div>
+
+<h1>Invocation Guide</h1>
+<div class="subtitle">name your desire; meet the powers who answer to it</div>
+
+<div class="controls">
+  <input type="text" id="intent" placeholder="what do you wish to manifest..."
+         value="" autocomplete="off">
+  <button id="divine">Divine</button>
+  <button class="secondary" id="browse">Browse All</button>
+</div>
+
+<div class="reading" id="reading"></div>
+
+<div id="results"></div>
+
+<div class="sigil-link" id="sigil-link" style="display:none">
+  <a id="sigil-a" href="index.html">Forge a sigil for this intent →</a>
+</div>
+
+<div class="hint">
+  Associations and practices drawn from traditional folklore, mythology, living
+  devotional custom, and grimoire sources (Ars Goetia for the demons — tradition
+  advises formal ritual, firm boundaries, and respect when working with them).
+  For reflection and inspiration.
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- the roster: traditional domains and invocation customs ----
+  var ENTITIES = [
+    // goddesses
+    { name: 'Lakshmi', type: 'Goddess', origin: 'Hindu', domains: ['wealth', 'luck', 'beauty', 'home'],
+      blurb: 'Goddess of wealth, fortune, and prosperity in all forms — material and spiritual.',
+      invoke: 'Fridays and Diwali; offer lotus flowers, sweets, and a ghee lamp. Mantra: “Om Shreem Mahalakshmiyei Namaha.”' },
+    { name: 'Aphrodite', type: 'Goddess', origin: 'Greek', domains: ['love', 'beauty'],
+      blurb: 'Goddess of love, beauty, and desire.',
+      invoke: 'Offer roses, apples, honey, myrtle, or seashells; address her as “golden Aphrodite” — and mean it.' },
+    { name: 'Freyja', type: 'Goddess', origin: 'Norse', domains: ['love', 'magic', 'strength'],
+      blurb: 'Goddess of love, seiðr magic, and battle — patron of those who take what they want from life.',
+      invoke: 'Offer amber, honey, mead, or gold on a Friday — her day. Speak to her plainly and proudly.' },
+    { name: 'Brigid', type: 'Goddess', origin: 'Celtic (Irish)', domains: ['healing', 'creativity', 'home'],
+      blurb: 'Triple goddess of the healing well, the poet’s fire, and the smith’s forge.',
+      invoke: 'Tend a candle flame for her; offer milk and bread; weave a Brigid’s cross of rushes at Imbolc (February 1).' },
+    { name: 'Athena', type: 'Goddess', origin: 'Greek', domains: ['wisdom', 'career', 'justice', 'creativity'],
+      blurb: 'Goddess of wisdom, strategy, and craft — invoked for clear thinking and won battles.',
+      invoke: 'Offer olive oil and owl imagery, but her truest offering is work done excellently. Call her “grey-eyed Athena.”' },
+    { name: 'Isis', type: 'Goddess', origin: 'Egyptian', domains: ['magic', 'healing', 'family', 'protection'],
+      blurb: 'Great of Magic, who reassembled Osiris — healer, protector of families, mistress of secret names.',
+      invoke: 'Offer milk, myrrh incense, and pure water. She of ten thousand names answers persistence.' },
+    { name: 'Hekate', type: 'Goddess', origin: 'Greek', domains: ['magic', 'protection', 'dreams', 'transformation'],
+      blurb: 'Goddess of witchcraft, crossroads, and keys.',
+      invoke: 'At the dark moon leave her supper — eggs, garlic, honey — at a crossroads, and walk away without looking back.' },
+    { name: 'Fortuna', type: 'Goddess', origin: 'Roman', domains: ['luck', 'wealth'],
+      blurb: 'Goddess of the turning wheel of fortune — invoked by gamblers and the hopeful alike.',
+      invoke: 'Offer coins; dedicate one small risk to her and accept the spin of the wheel.' },
+    { name: 'Guanyin', type: 'Goddess', origin: 'Chinese / Buddhist', domains: ['peace', 'healing', 'family'],
+      blurb: 'Bodhisattva of compassion who hears the cries of the world; bringer of mercy and children.',
+      invoke: 'Offer pure water and white flowers; chant “Namo Guanshiyin Pusa.” Mercy shown to others is mercy offered to her.' },
+    { name: 'Saraswati', type: 'Goddess', origin: 'Hindu', domains: ['wisdom', 'creativity', 'music', 'communication'],
+      blurb: 'Goddess of knowledge, music, arts, and eloquence — patron of students and artists.',
+      invoke: 'Offer white flowers; place your books or instrument before her, especially at Vasant Panchami. Mantra: “Om Aim Saraswatyai Namaha.”' },
+    { name: 'Durga', type: 'Goddess', origin: 'Hindu', domains: ['protection', 'strength', 'justice'],
+      blurb: 'The invincible warrior goddess who slays what oppresses; called on when the odds are unfair.',
+      invoke: 'Offer red hibiscus, especially during Navratri. Mantra: “Om Dum Durgayei Namaha.”' },
+    { name: 'Bastet', type: 'Goddess', origin: 'Egyptian', domains: ['home', 'protection', 'beauty'],
+      blurb: 'Cat goddess of the home, pleasure, and fierce protection of those within her walls.',
+      invoke: 'Offer perfume and music; the daily care of any cat is devotion to her.' },
+    { name: 'Demeter', type: 'Goddess', origin: 'Greek', domains: ['nature', 'family', 'wealth'],
+      blurb: 'Goddess of the harvest and a mother’s relentless love; giver of abundance in season.',
+      invoke: 'Offer bread, barley, and the first share of anything you harvest or earn.' },
+    { name: 'Hestia', type: 'Goddess', origin: 'Greek', domains: ['home', 'peace', 'family'],
+      blurb: 'Goddess of the hearth — first offering of every rite, keeper of warm and quiet households.',
+      invoke: 'Hers is the first and last portion of any rite: feed the hearth-flame, keep one candle lit at gatherings.' },
+    { name: 'Artemis', type: 'Goddess', origin: 'Greek', domains: ['protection', 'strength', 'nature'],
+      blurb: 'Huntress and protector of the young and of women; fiercely independent, swift to defend.',
+      invoke: 'Offer honey cakes ringed with small candles under a full moon; protect something young or wild in her name.' },
+    { name: 'Persephone', type: 'Goddess', origin: 'Greek', domains: ['transformation', 'grief', 'nature'],
+      blurb: 'Queen of the underworld and the returning spring — goddess of descent, loss, and re-emergence.',
+      invoke: 'Offer pomegranates and spring flowers; honor her autumn descent as faithfully as her spring return.' },
+    { name: 'Inanna', type: 'Goddess', origin: 'Sumerian', domains: ['love', 'strength', 'transformation'],
+      blurb: 'Queen of Heaven — goddess of love, war, and ambition, who descended to the underworld and returned.',
+      invoke: 'Offer dates, beer, and lapis lazuli beneath her eight-pointed star; read her hymns aloud — she has always liked praise.' },
+    { name: 'Ereshkigal', type: 'Goddess', origin: 'Sumerian', domains: ['grief', 'transformation'],
+      blurb: 'Queen of the Great Below — sovereign of endings, mourning, and what must be surrendered at each gate.',
+      invoke: 'Offer dark bread and still water in a quiet room; like Inanna at her seven gates, surrender something at each step down.' },
+    { name: 'Ninhursag', type: 'Goddess', origin: 'Sumerian', domains: ['family', 'nature', 'healing'],
+      blurb: 'Mother of the mountains and of all living things; midwife of the gods, lady of fertility and birth.',
+      invoke: 'Offer milk and grain; any kindness done for mothers and midwives is hers.' },
+    { name: 'Nisaba', type: 'Goddess', origin: 'Sumerian', domains: ['wisdom', 'communication'],
+      blurb: 'Goddess of writing, grain, and accounts — the scribe’s patron.',
+      invoke: 'Write something fine, and close it as the scribes closed their tablets: “Nisaba be praised!”' },
+    { name: 'Gula', type: 'Goddess', origin: 'Mesopotamian', domains: ['healing'],
+      blurb: '“The great physician” — goddess of medicine and recovery, attended by her sacred dogs.',
+      invoke: 'Care for a dog in her name; offer herbs, and take your medicine faithfully — she favors patients who cooperate.' },
+    { name: 'The Morrígan', type: 'Goddess', origin: 'Celtic (Irish)', domains: ['strength', 'protection', 'dreams', 'transformation'],
+      blurb: 'Great queen of battle, prophecy, and sovereignty; shapeshifter who appears as the crow.',
+      invoke: 'Pour red wine or milk onto bare earth; keep crow feathers found, never taken. Swear her nothing you will not keep.' },
+    { name: 'Cerridwen', type: 'Goddess', origin: 'Celtic (Welsh)', domains: ['magic', 'wisdom', 'transformation', 'creativity'],
+      blurb: 'Keeper of the cauldron of Awen — inspiration, deep magic, and total transformation.',
+      invoke: 'Brew or cook with full intention — the pot is her cauldron. Ask for Awen, the fire of inspiration, and stir.' },
+    { name: 'Airmid', type: 'Goddess', origin: 'Celtic (Irish)', domains: ['healing', 'nature'],
+      blurb: 'Healer of the Tuatha Dé Danann who knows the virtue of every herb that grows.',
+      invoke: 'Tend an herb garden, however small; learn one healing plant deeply each season in her name.' },
+    { name: 'Epona', type: 'Goddess', origin: 'Celtic (Gaulish)', domains: ['nature', 'travel', 'family'],
+      blurb: 'Horse goddess of journeys, fertility, and plenty — so loved even Rome kept her feast.',
+      invoke: 'Offer oats, apples, and roses, as her Gaulish shrines received; kindness to horses is her worship.' },
+    { name: 'Danu', type: 'Goddess', origin: 'Celtic (Irish)', domains: ['family', 'nature', 'wisdom'],
+      blurb: 'Ancestral mother of the Tuatha Dé Danann; the deep river of lineage, land, and old wisdom.',
+      invoke: 'Make offerings at a river’s edge; speak your ancestors’ names aloud — she is the oldest of them.' },
+    { name: 'Rhiannon', type: 'Goddess', origin: 'Celtic (Welsh)', domains: ['music', 'justice', 'strength'],
+      blurb: 'Lady of the otherworld horse and the birds whose song soothes all sorrow; falsely accused and vindicated, she endures.',
+      invoke: 'Listen for birdsong at dawn as her voice; her devotion is patience under injustice — endure, and name her.' },
+    { name: 'Pachamama', type: 'Goddess', origin: 'Inca / Andean', domains: ['nature', 'wealth', 'family', 'home'],
+      blurb: 'World-mother of the Andes — the living earth who gives harvest, shelter, and increase to those who offer back.',
+      invoke: 'Pour the first sip of any drink to the ground — the challa; in August, her month, feed the earth directly.' },
+    { name: 'Mama Killa', type: 'Goddess', origin: 'Inca / Andean', domains: ['dreams', 'family', 'beauty'],
+      blurb: 'Moon goddess who keeps the calendar of festivals; protector of women and marriage.',
+      invoke: 'Offer silver and watch the moon rise on her bright nights; ask at the full, decide at the new.' },
+    { name: 'Mama Cocha', type: 'Goddess', origin: 'Inca / Andean', domains: ['travel', 'protection', 'peace'],
+      blurb: 'Mother of waters who calms storms and watches over sailors and fishermen.',
+      invoke: 'Offer shells at the waterline; ask safe passage aloud before any crossing.' },
+    { name: 'Xochiquetzal', type: 'Goddess', origin: 'Aztec / Mexica', domains: ['love', 'beauty', 'creativity', 'family'],
+      blurb: 'Goddess of flowers, love, pleasure, and the crafts of weavers and artisans.',
+      invoke: 'Offer marigolds, woven or crafted things, and chocolate; make something beautiful with your own hands.' },
+    { name: 'Tlazolteotl', type: 'Goddess', origin: 'Aztec / Mexica', domains: ['peace', 'transformation'],
+      blurb: 'Eater of sins — goddess who devours confessed wrongdoing and leaves the speaker clean.',
+      invoke: 'Her rite is confession: speak the wrong aloud, completely and once — tradition granted it but once in a life — then live clean.' },
+    { name: 'Ixchel', type: 'Goddess', origin: 'Maya', domains: ['healing', 'family', 'dreams', 'creativity'],
+      blurb: 'Moon goddess of medicine, midwifery, and weaving; pilgrims crossed the sea to her island shrine.',
+      invoke: 'Offer woven work and water kept overnight in moonlight; pilgrims sailed to Cozumel for her blessing on birth and healing.' },
+
+    // gods
+    { name: 'Ganesha', type: 'God', origin: 'Hindu', domains: ['career', 'transformation', 'luck', 'wisdom'],
+      blurb: 'Remover of obstacles, lord of beginnings — traditionally invoked before any new venture.',
+      invoke: 'Invoke him first, before any other and before any venture: offer modak sweets, red flowers, durva grass. “Om Gam Ganapataye Namaha.”' },
+    { name: 'Hermes', type: 'God', origin: 'Greek', domains: ['communication', 'travel', 'wealth', 'luck'],
+      blurb: 'Messenger god of commerce, travelers, eloquence, and fortunate coincidence.',
+      invoke: 'Offer coins and incense at a crossroads; add a stone to a wayside cairn; travel light and talk fast.' },
+    { name: 'Thoth', type: 'God', origin: 'Egyptian', domains: ['wisdom', 'magic', 'communication'],
+      blurb: 'Ibis-headed scribe of the gods, inventor of writing, keeper of all hidden knowledge.',
+      invoke: 'Offer ink and written words — study itself is his worship. The ibis and the moon are his signs.' },
+    { name: 'Apollo', type: 'God', origin: 'Greek', domains: ['healing', 'creativity', 'music', 'dreams'],
+      blurb: 'God of light, music, prophecy, and healing — patron of oracles and artists.',
+      invoke: 'Offer laurel and frankincense; perform music for him — a paean sung aloud is the classic call.' },
+    { name: 'Kubera', type: 'God', origin: 'Hindu', domains: ['wealth'],
+      blurb: 'Lord of riches and guardian of the world’s treasures; banker of the gods.',
+      invoke: 'Light lamps at Dhanteras, before Diwali; he is honored alongside Lakshmi for wealth that stays.' },
+    { name: 'Thor', type: 'God', origin: 'Norse', domains: ['protection', 'strength'],
+      blurb: 'Thunder god, defender of mankind — hammer raised against every hostile thing.',
+      invoke: 'Raise a horn or glass to him; offer mead or beer; hold or wear the hammer when you ask his protection.' },
+    { name: 'Odin', type: 'God', origin: 'Norse', domains: ['wisdom', 'magic', 'creativity'],
+      blurb: 'Allfather who traded an eye for wisdom and hung nine nights for the runes.',
+      invoke: 'Pour out mead; compose verse; feed the corvids. Wednesday — Woden’s day — is his. He trades: expect a price.' },
+    { name: 'Lugh', type: 'God', origin: 'Celtic (Irish)', domains: ['career', 'creativity', 'strength'],
+      blurb: 'The many-skilled god — master of every art and craft, patron of earned victory.',
+      invoke: 'Display your skill — games and contests at Lughnasadh (August 1); offer the first fruits of your talent.' },
+    { name: 'Asclepius', type: 'God', origin: 'Greek', domains: ['healing'],
+      blurb: 'God of medicine whose serpent staff still marks the healer’s door.',
+      invoke: 'The ancients slept in his sanctuaries seeking a healing dream; offer a token shaped like what needs mending, and harm no snake.' },
+    { name: 'Hanuman', type: 'God', origin: 'Hindu', domains: ['strength', 'protection', 'peace'],
+      blurb: 'Monkey god of devotion and limitless strength; invoked for courage and protection from harm.',
+      invoke: 'Tuesdays and Saturdays; offer sindoor and sweets; recite the Hanuman Chalisa for strength that does not fail.' },
+    { name: 'Janus', type: 'God', origin: 'Roman', domains: ['transformation', 'home', 'travel'],
+      blurb: 'Two-faced god of doorways, thresholds, and beginnings — sees what was and what comes.',
+      invoke: 'Name him first in any prayer, as Rome did; make offerings at doorways on the first of the month; mark beginnings deliberately.' },
+    { name: 'Cernunnos', type: 'God', origin: 'Celtic (Gaulish)', domains: ['nature', 'wealth', 'family'],
+      blurb: 'Horned lord of wild things and abundance, seated among beasts with a torc in hand.',
+      invoke: 'Offer in the forest — a found antler, nuts, quiet; leave every wild place a little wilder than you found it.' },
+    { name: 'Shiva', type: 'God', origin: 'Hindu', domains: ['transformation', 'peace', 'magic'],
+      blurb: 'The destroyer-transformer; ends what is finished so what is next can begin.',
+      invoke: 'Mondays; offer bilva leaves and milk. “Om Namah Shivaya” — the oldest knot-cutter there is.' },
+    { name: 'Enki', type: 'God', origin: 'Sumerian', domains: ['wisdom', 'magic', 'creativity'],
+      blurb: 'God of sweet waters, cunning, magic, and crafts — the clever friend of humankind.',
+      invoke: 'Pour clean water out for him; a clever, kind solution to a hard problem is his favorite offering.' },
+    { name: 'Utu', type: 'God', origin: 'Sumerian', domains: ['justice', 'protection'],
+      blurb: 'Sun god who sees all done under his light; judge of gods and mortals, defender of the wronged.',
+      invoke: 'Speak your case truthfully at sunrise with open hands; honest dealing is his whole cult.' },
+    { name: 'Nanna', type: 'God', origin: 'Sumerian', domains: ['dreams', 'wisdom'],
+      blurb: 'Moon god of Ur who measures time and illuminates the night — lord of omens and quiet knowing.',
+      invoke: 'Mark the moonrise; offer dates and lapis; ask your question at the full moon and sleep on the answer.' },
+    { name: 'Manannán mac Lir', type: 'God', origin: 'Celtic (Irish)', domains: ['travel', 'magic', 'protection'],
+      blurb: 'Sea god and mist-walker between worlds; guardian of travelers over water and into the unknown.',
+      invoke: 'Leave offerings at the tide line for the sea to take; call to him in mist — he walks between worlds.' },
+    { name: 'Aengus', type: 'God', origin: 'Celtic (Irish)', domains: ['love', 'dreams', 'creativity'],
+      blurb: 'Young god of love and poetry who found his beloved by following a dream.',
+      invoke: 'Write the poem and read it aloud; paired swans are his sign; tell him your dream — he found love by one.' },
+    { name: 'Quetzalcoatl', type: 'God', origin: 'Aztec / Mexica', domains: ['wisdom', 'creativity', 'transformation'],
+      blurb: 'The feathered serpent — giver of learning, arts, and the calendar; wind that comes before rain.',
+      invoke: 'Offer copal incense and quetzal-green things; learning taken seriously is his worship.' },
+    { name: 'Tezcatlipoca', type: 'God', origin: 'Aztec / Mexica', domains: ['magic', 'dreams', 'transformation'],
+      blurb: 'Lord of the smoking mirror — sorcery, fate, and the night sky. A tester of mortals; tradition treats him warily.',
+      invoke: 'Copal smoke and obsidian; approach with humility, for he humbles the proud — his mirror shows everything.' },
+    { name: 'Huitzilopochtli', type: 'God', origin: 'Aztec / Mexica', domains: ['strength', 'protection'],
+      blurb: 'Hummingbird of the South — sun and war god who led his people to their homeland and defends them still.',
+      invoke: 'Offer marigolds and discipline; the hummingbird is his sign — fallen warriors returned.' },
+    { name: 'Tlaloc', type: 'God', origin: 'Aztec / Mexica', domains: ['nature', 'wealth'],
+      blurb: 'Ancient god of rain and fertile storms; giver of the harvests that all abundance rests on.',
+      invoke: 'Burn copal when the first rain falls; waste no water — it is all his.' },
+    { name: 'Itzamna', type: 'God', origin: 'Maya', domains: ['wisdom', 'communication', 'healing', 'magic'],
+      blurb: 'Sky father and first sage — inventor of writing, lord of medicine and esoteric knowledge.',
+      invoke: 'Offer copal and serious study; the first sage favors those who teach what they know.' },
+    { name: 'Ek Chuaj', type: 'God', origin: 'Maya', domains: ['wealth', 'travel'],
+      blurb: 'Patron of merchants and cacao; guardian of those who carry goods on long roads.',
+      invoke: 'Offer cacao before any journey or venture — merchants burned it for him on the road.' },
+    { name: 'Yum Kaax', type: 'God', origin: 'Maya', domains: ['nature', 'wealth'],
+      blurb: 'Lord of the wild forest and its provision — keeper of game, maize, and growing things.',
+      invoke: 'Ask before you take anything from the wild, and offer back the first fruits of whatever you grow.' },
+    { name: 'Inti', type: 'God', origin: 'Inca / Andean', domains: ['wealth', 'nature'],
+      blurb: 'Sun god whose warmth ripens the fields; honored with gratitude and gold at Inti Raymi.',
+      invoke: 'Greet the sunrise with thanks; offer gold-colored things, and chicha poured to the ground at Inti Raymi (June solstice).' },
+    { name: 'Viracocha', type: 'God', origin: 'Inca / Andean', domains: ['wisdom', 'transformation', 'magic'],
+      blurb: 'Creator who rose from Lake Titicaca and wandered the world as a teacher, remaking it as he went.',
+      invoke: 'Sit quietly beside water at dawn; he walked the world as a poor teacher — honor him by teaching freely.' },
+    { name: 'Ekeko', type: 'God', origin: 'Aymara / Andean', domains: ['wealth', 'home', 'luck'],
+      blurb: 'God of abundance — load his figure with miniatures of what you desire and he provides the real thing.',
+      invoke: 'At Alasitas (January 24) load his figure with miniatures of everything you want that year; keep him fed and never empty-handed.' },
+
+    // orishas
+    { name: 'Oshun', type: 'Orisha', origin: 'Yoruba', domains: ['love', 'wealth', 'beauty', 'family'],
+      blurb: 'Orisha of the river, sweetness, love, and gold.',
+      invoke: 'Offer honey, oranges, and yellow flowers at a river — and always taste the honey first, as her tradition requires.' },
+    { name: 'Yemaya', type: 'Orisha', origin: 'Yoruba', domains: ['family', 'protection', 'healing'],
+      blurb: 'Great mother of the ocean; protector of women, children, and all who cross water.',
+      invoke: 'Offer white roses or watermelon to the sea; her colors are blue and white, her number is seven.' },
+    { name: 'Ogun', type: 'Orisha', origin: 'Yoruba', domains: ['career', 'strength', 'justice'],
+      blurb: 'Orisha of iron, labor, and the clearing of paths — patron of those who work for their place.',
+      invoke: 'Offer rum and palm oil; keep your tools sharp, clean, and honestly used — work itself is his liturgy.' },
+
+    // angels
+    { name: 'Michael', type: 'Angel', origin: 'Abrahamic', domains: ['protection', 'strength', 'justice'],
+      blurb: 'Archangel of protection and righteous courage, sword drawn against every adversary.',
+      invoke: 'A red or blue candle on Sunday; the old prayer “Saint Michael, defend us” — said like you mean it.' },
+    { name: 'Raphael', type: 'Angel', origin: 'Abrahamic', domains: ['healing', 'travel'],
+      blurb: 'Archangel whose name means “God heals” — patron of healing and safe journeys.',
+      invoke: 'A yellow or green candle on Wednesday; call on him before journeys and treatments — healing is his very name.' },
+    { name: 'Gabriel', type: 'Angel', origin: 'Abrahamic', domains: ['communication', 'dreams', 'family'],
+      blurb: 'The messenger archangel — bearer of announcements, visions, and news of children.',
+      invoke: 'A white or silver candle on Monday; offer lilies; write down the message you need carried and read it aloud.' },
+    { name: 'Uriel', type: 'Angel', origin: 'Abrahamic', domains: ['wisdom', 'justice'],
+      blurb: 'Archangel of the light of God; illuminates hard problems and dark passages.',
+      invoke: 'Light a candle before study or a hard decision; ask for the light, then look at the problem again.' },
+    { name: 'Jophiel', type: 'Angel', origin: 'Abrahamic', domains: ['beauty', 'creativity', 'wisdom'],
+      blurb: 'Archangel of beauty and beautiful thoughts; invoked by artists and the discouraged.',
+      invoke: 'Offer fresh flowers; the invocation itself is to beautify one neglected corner of your life.' },
+    { name: 'Chamuel', type: 'Angel', origin: 'Abrahamic', domains: ['love', 'peace', 'finding'],
+      blurb: 'Archangel of peaceful relationships — and, traditionally, the finder of lost things.',
+      invoke: 'A pink candle; name the lost thing — or person — aloud, then look once more where you already looked.' },
+    { name: 'Zadkiel', type: 'Angel', origin: 'Abrahamic', domains: ['peace', 'transformation'],
+      blurb: 'Archangel of mercy and forgiveness; loosens what resentment has rusted shut.',
+      invoke: 'A violet candle; write the resentment on paper and burn it safely — that is the whole rite.' },
+    { name: 'Raziel', type: 'Angel', origin: 'Abrahamic', domains: ['magic', 'wisdom', 'dreams'],
+      blurb: 'Keeper of the Book of Secrets — archangel of mysteries and esoteric knowledge.',
+      invoke: 'Study an esoteric text with respect; prisms and rainbows mark him. Ask to understand only what you can carry.' },
+    { name: 'Sandalphon', type: 'Angel', origin: 'Abrahamic', domains: ['music', 'communication'],
+      blurb: 'Archangel of music and prayer, who carries words upward and weaves them into song.',
+      invoke: 'Sing or play your prayer instead of speaking it — he gathers songs upward.' },
+    { name: 'Haniel', type: 'Angel', origin: 'Abrahamic', domains: ['dreams', 'beauty', 'peace'],
+      blurb: 'Archangel of grace and the moon; sharpens intuition and softens harsh seasons.',
+      invoke: 'Moonlight and a single rose; as devotion, trust your first instinct for one full day.' },
+    { name: 'Ariel', type: 'Angel', origin: 'Abrahamic', domains: ['nature', 'wealth', 'healing'],
+      blurb: 'Archangel of the natural world — animals, elements, and material provision.',
+      invoke: 'Feed wild birds or tend a plant; invoke outdoors, where the air moves.' },
+    { name: 'Azrael', type: 'Angel', origin: 'Abrahamic', domains: ['grief', 'transformation', 'peace'],
+      blurb: 'Angel of transitions; comforts the grieving and eases every kind of ending.',
+      invoke: 'Light a candle for your dead and speak their names with love; he carries the rest.' },
+
+    // saints
+    { name: 'Reprobus', type: 'Saint', origin: 'Eastern Christian legend', domains: ['travel', 'protection', 'strength'],
+      blurb: 'The dog-headed giant who sought the mightiest master to serve, and carried the Christ-child across the river — baptized as Christopher, “Christ-bearer,” patron of travelers.',
+      invoke: 'Carry his image or medal on every journey; the medieval promise: look on Christopher’s face today, and today you shall not fall.' },
+    { name: 'Santa Muerte', type: 'Saint', origin: 'Mexican folk tradition', domains: ['protection', 'love', 'healing', 'grief', 'justice'],
+      blurb: 'La Niña Blanca — death herself as folk saint, robed and carrying the scythe; fierce and unjudging patron of those the world overlooks, petitioned for protection, love, healing, and fair dealing.',
+      invoke: 'Keep a candle in the color of your petition — white to cleanse, red for love, gold for money, black for protection; offer water, tobacco smoke, or tequila. Tradition is emphatic: never promise her what you will not deliver.' },
+
+    // fictional
+    { name: 'She-Ra', type: 'Fictional', origin: 'Etheria — Masters of the Universe', domains: ['strength', 'protection', 'healing', 'transformation'],
+      blurb: 'Princess of Power — Adora transformed, defender of Etheria against the Horde, with the rare gift of healing among warriors.',
+      invoke: 'Raise the sword (any sword) and speak the words: “For the honor of Grayskull!” Best invoked when defending someone who cannot defend themselves.' },
+    { name: 'Rainbow Brite', type: 'Fictional', origin: 'Rainbow Land — Hallmark, 1984', domains: ['beauty', 'peace', 'creativity'],
+      blurb: 'Wisp, the girl who brought color back to a grey world — keeper of the Color Belt and the star sprinkles, with Starlite the magnificent at her side.',
+      invoke: 'Wear something defiantly bright, scatter star sprinkles (glitter will do), and refuse to let the world go grey around you.' },
+
+    // goetic demons
+    { name: 'Bune', type: 'Demon', origin: 'Ars Goetia', domains: ['wealth', 'communication'],
+      blurb: 'Great Duke said to give riches and eloquence, and make one wise in speech.',
+      invoke: 'Grimoire method: his seal before you, terms stated exactly, formal license to depart when done.' },
+    { name: 'Paimon', type: 'Demon', origin: 'Ars Goetia', domains: ['wisdom', 'magic', 'creativity'],
+      blurb: 'King who teaches all arts, sciences, and secret things; arrives with a great host.',
+      invoke: 'The Goetia says he comes with trumpets and must be allowed to speak; seal, firm terms, formal license to depart.' },
+    { name: 'Orobas', type: 'Demon', origin: 'Ars Goetia', domains: ['justice', 'protection', 'dreams'],
+      blurb: 'Prince reputed honest with summoners — gives true answers and protection from deception.',
+      invoke: 'Seal and plainly spoken terms; reputed faithful to the summoner and to ask little — close the rite formally all the same.' },
+    { name: 'Vassago', type: 'Demon', origin: 'Ars Goetia', domains: ['finding', 'dreams'],
+      blurb: 'Prince of a good nature who declares things past, present, and to come — and finds what is hidden or lost.',
+      invoke: 'Seal, one clear question, license to depart; practitioners keep a scrying surface at hand for his answers.' },
+    { name: 'Buer', type: 'Demon', origin: 'Ars Goetia', domains: ['healing', 'wisdom', 'nature'],
+      blurb: 'President who teaches philosophy and the virtues of herbs, and heals all distempers.',
+      invoke: 'Seal and stated terms; name the ailment or subject precisely — vagueness gets vague results.' },
+    { name: 'Sitri', type: 'Demon', origin: 'Ars Goetia', domains: ['love'],
+      blurb: 'Prince who enflames desire and causes one to be seen favorably.',
+      invoke: 'Seal, exact terms, formal close; tradition warns his work stirs only what is already in the heart.' },
+    { name: 'Dantalion', type: 'Demon', origin: 'Ars Goetia', domains: ['communication', 'wisdom', 'love'],
+      blurb: 'Duke who knows all thoughts and can change them; teaches all arts and sciences.',
+      invoke: 'Seal, the precise naming of the mind you wish to reach, formal license to depart.' },
+    { name: 'Sallos', type: 'Demon', origin: 'Ars Goetia', domains: ['love', 'peace'],
+      blurb: 'Duke of a peaceable nature who causes love between people.',
+      invoke: 'Seal and gentle terms — the Goetia names him peaceable; close formally even so.' },
+    { name: 'Stolas', type: 'Demon', origin: 'Ars Goetia', domains: ['wisdom', 'nature'],
+      blurb: 'Prince in owl form who teaches astronomy and the properties of herbs and precious stones.',
+      invoke: 'Work his seal by night under open stars; bring questions of herbs, stones, and the sky.' },
+    { name: 'Seere', type: 'Demon', origin: 'Ars Goetia', domains: ['career', 'finding', 'travel'],
+      blurb: 'Prince of swiftness — brings matters to pass suddenly and discovers what is concealed.',
+      invoke: 'Seal and a single swift errand stated plainly; the Goetia calls him indifferent to good or ill — be exact.' },
+    { name: 'Belial', type: 'Demon', origin: 'Ars Goetia', domains: ['career', 'justice'],
+      blurb: 'King said to distribute dignities and the favor of friends and foes alike.',
+      invoke: 'The Goetia is blunt: he answers truly only when given offerings and gifts. Tradition urges the greatest caution and the most exact terms of all.' },
+    { name: 'Furcas', type: 'Demon', origin: 'Ars Goetia', domains: ['wisdom', 'communication'],
+      blurb: 'Knight who teaches philosophy, rhetoric, logic, and the reading of hands and stars.',
+      invoke: 'Seal, a named subject of study, formal license to depart.' }
+  ];
+
+  // keyword -> domains it signals
+  var KEYWORDS = {
+    money: ['wealth'], cash: ['wealth'], wealth: ['wealth'], wealthy: ['wealth'], rich: ['wealth'],
+    riches: ['wealth'], abundance: ['wealth'], prosperity: ['wealth'], prosper: ['wealth'],
+    financial: ['wealth'], finances: ['wealth'], debt: ['wealth'], income: ['wealth'],
+    salary: ['wealth'], savings: ['wealth'], bills: ['wealth'], fortune: ['wealth', 'luck'],
+
+    job: ['career'], career: ['career'], work: ['career'], business: ['career', 'wealth'],
+    promotion: ['career'], success: ['career'], succeed: ['career'], ambition: ['career'],
+    interview: ['career', 'communication'], company: ['career'], startup: ['career'],
+    client: ['career'], clients: ['career'], hired: ['career'], obstacle: ['career', 'transformation'],
+    obstacles: ['career', 'transformation'], goal: ['career'], goals: ['career'],
+
+    love: ['love'], romance: ['love'], romantic: ['love'], relationship: ['love'],
+    partner: ['love'], soulmate: ['love'], marriage: ['love', 'family'], marry: ['love'],
+    attraction: ['love', 'beauty'], attract: ['love'], passion: ['love'], crush: ['love'],
+    dating: ['love'], date: ['love'], lover: ['love'], heart: ['love'],
+
+    heal: ['healing'], healing: ['healing'], health: ['healing'], healthy: ['healing'],
+    illness: ['healing'], ill: ['healing'], sick: ['healing'], sickness: ['healing'],
+    recovery: ['healing'], recover: ['healing'], disease: ['healing'], pain: ['healing'],
+    wellness: ['healing'], surgery: ['healing'],
+
+    protect: ['protection'], protection: ['protection'], safety: ['protection'], safe: ['protection'],
+    shield: ['protection'], ward: ['protection'], enemy: ['protection', 'justice'],
+    enemies: ['protection', 'justice'], evil: ['protection'], curse: ['protection', 'magic'],
+    cursed: ['protection', 'magic'], hex: ['protection', 'magic'], danger: ['protection'],
+    bully: ['protection', 'justice'], bullies: ['protection', 'justice'], stalker: ['protection'],
+
+    wisdom: ['wisdom'], wise: ['wisdom'], knowledge: ['wisdom'], learn: ['wisdom'],
+    learning: ['wisdom'], study: ['wisdom'], studies: ['wisdom'], studying: ['wisdom'],
+    school: ['wisdom'], exam: ['wisdom'], exams: ['wisdom'], test: ['wisdom'], tests: ['wisdom'],
+    understanding: ['wisdom'], insight: ['wisdom', 'dreams'], clarity: ['wisdom'],
+    decision: ['wisdom'], decisions: ['wisdom'],
+
+    create: ['creativity'], creativity: ['creativity'], creative: ['creativity'], art: ['creativity'],
+    artist: ['creativity'], writing: ['creativity'], write: ['creativity'], writer: ['creativity'],
+    inspiration: ['creativity'], inspired: ['creativity'], project: ['creativity', 'career'],
+    craft: ['creativity'], novel: ['creativity'], painting: ['creativity'], design: ['creativity'],
+
+    luck: ['luck'], lucky: ['luck'], gamble: ['luck'], gambling: ['luck'], chance: ['luck'],
+    odds: ['luck'], lottery: ['luck', 'wealth'],
+
+    speak: ['communication'], speaking: ['communication'], speech: ['communication'],
+    communication: ['communication'], communicate: ['communication'], message: ['communication'],
+    voice: ['communication'], eloquence: ['communication'], eloquent: ['communication'],
+    persuade: ['communication'], persuasion: ['communication'], negotiation: ['communication'],
+    negotiate: ['communication'], presentation: ['communication'], words: ['communication'],
+
+    family: ['family'], children: ['family'], child: ['family'], kids: ['family'],
+    mother: ['family'], motherhood: ['family'], parent: ['family'], parents: ['family'],
+    pregnancy: ['family'], pregnant: ['family'], fertility: ['family'], baby: ['family'],
+    conceive: ['family'],
+
+    strength: ['strength'], strong: ['strength'], courage: ['strength'], courageous: ['strength'],
+    brave: ['strength'], bravery: ['strength'], confidence: ['strength'], confident: ['strength'],
+    willpower: ['strength'], discipline: ['strength'], endurance: ['strength'],
+    fear: ['strength'], fears: ['strength'],
+
+    beauty: ['beauty'], beautiful: ['beauty'], glamour: ['beauty'], charm: ['beauty'],
+    appearance: ['beauty'], attractive: ['beauty', 'love'],
+
+    justice: ['justice'], fair: ['justice'], fairness: ['justice'], court: ['justice'],
+    legal: ['justice'], lawsuit: ['justice'], truth: ['justice'], wronged: ['justice'],
+    karma: ['justice'],
+
+    change: ['transformation'], changes: ['transformation'], transformation: ['transformation'],
+    transform: ['transformation'], rebirth: ['transformation'], renewal: ['transformation'],
+    beginning: ['transformation'], beginnings: ['transformation'], restart: ['transformation'],
+    reinvent: ['transformation'], habit: ['transformation'], habits: ['transformation'],
+    quit: ['transformation'], release: ['transformation'],
+
+    home: ['home'], house: ['home'], hearth: ['home'], household: ['home'],
+    domestic: ['home'], apartment: ['home'], moving: ['home'], move: ['home'],
+
+    travel: ['travel'], travels: ['travel'], journey: ['travel'], trip: ['travel'], voyage: ['travel'],
+
+    dream: ['dreams'], dreams: ['dreams'], intuition: ['dreams'], psychic: ['dreams'],
+    divination: ['dreams'], vision: ['dreams'], visions: ['dreams'], prophecy: ['dreams'],
+    tarot: ['dreams'], future: ['dreams'],
+
+    peace: ['peace'], calm: ['peace'], anxiety: ['peace', 'healing'], stress: ['peace'],
+    serenity: ['peace'], harmony: ['peace'], forgiveness: ['peace'], forgive: ['peace'],
+    depression: ['peace', 'healing'], sleep: ['peace'], rest: ['peace'],
+
+    magic: ['magic'], magick: ['magic'], spell: ['magic'], spells: ['magic'],
+    witchcraft: ['magic'], occult: ['magic'], ritual: ['magic'], rituals: ['magic'],
+    power: ['magic', 'strength'],
+
+    lost: ['finding'], find: ['finding'], finding: ['finding'], found: ['finding'],
+    missing: ['finding'], locate: ['finding'],
+
+    nature: ['nature'], animals: ['nature'], animal: ['nature'], pet: ['nature'], pets: ['nature'],
+    garden: ['nature'], plants: ['nature'], plant: ['nature'], earth: ['nature'], herbs: ['nature'],
+
+    music: ['music'], sing: ['music'], singing: ['music'], song: ['music'],
+    instrument: ['music'], band: ['music'],
+
+    grief: ['grief'], grieving: ['grief'], mourning: ['grief'], loss: ['grief'],
+    died: ['grief'], death: ['grief'], passed: ['grief'], closure: ['grief']
+  };
+
+  function readDomains(text) {
+    var tokens = text.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+    var hits = {};
+    tokens.forEach(function (tok) {
+      var entry = KEYWORDS[tok];
+      if (!entry && tok.length > 3 && tok.slice(-1) === 's') entry = KEYWORDS[tok.slice(0, -1)];
+      if (entry) entry.forEach(function (d) { hits[d] = 1; });
+    });
+    return Object.keys(hits);
+  }
+
+  function makeCard(e, matchedDomains) {
+    var card = document.createElement('div');
+    card.className = 'card';
+
+    var chips = e.domains.map(function (d) {
+      var hit = matchedDomains && matchedDomains.indexOf(d) !== -1;
+      return '<span class="chip' + (hit ? ' hit' : '') + '">' + d + '</span>';
+    }).join('');
+
+    card.innerHTML =
+      '<h2>' + e.name + ' <span class="badge ' + e.type.toLowerCase() + '">' + e.type + '</span></h2>' +
+      '<div class="origin">' + e.origin + '</div>' +
+      '<div class="blurb">' + e.blurb + '</div>' +
+      '<div class="chips">' + chips + '</div>' +
+      '<div class="approach"><b>To invoke:</b> ' + e.invoke + '</div>';
+    return card;
+  }
+
+  function divine() {
+    var text = document.getElementById('intent').value.trim();
+    var reading = document.getElementById('reading');
+    var results = document.getElementById('results');
+    var sigilLink = document.getElementById('sigil-link');
+    results.innerHTML = '';
+    sigilLink.style.display = 'none';
+
+    if (!text) {
+      reading.innerHTML = 'speak your desire above';
+      return;
+    }
+
+    var domains = readDomains(text);
+    if (domains.length === 0) {
+      reading.innerHTML = 'the reading is unclear — try words like <b>money</b>, <b>love</b>, <b>healing</b>, <b>protection</b>, <b>courage</b>, <b>luck</b>, or <b>a new job</b>';
+      return;
+    }
+
+    reading.innerHTML = 'reading your intent as: <b>' + domains.join('</b>, <b>') + '</b>';
+
+    var scored = ENTITIES.map(function (e) {
+      var score = e.domains.filter(function (d) { return domains.indexOf(d) !== -1; }).length;
+      return { e: e, score: score };
+    }).filter(function (s) { return s.score > 0; });
+
+    scored.sort(function (a, b) { return b.score - a.score; });
+    scored.slice(0, 9).forEach(function (s) {
+      results.appendChild(makeCard(s.e, domains));
+    });
+
+    if (scored.length === 0) {
+      results.innerHTML = '<div class="empty">no powers answered — try phrasing your desire differently</div>';
+      return;
+    }
+
+    document.getElementById('sigil-a').href = 'index.html?phrase=' + encodeURIComponent(text);
+    sigilLink.style.display = 'block';
+  }
+
+  function browse() {
+    var reading = document.getElementById('reading');
+    var results = document.getElementById('results');
+    document.getElementById('sigil-link').style.display = 'none';
+    results.innerHTML = '';
+
+    reading.innerHTML = 'the full roster — <b>' + ENTITIES.length + '</b> figures';
+
+    var ORDER = ['Goddess', 'God', 'Orisha', 'Angel', 'Saint', 'Demon', 'Fictional'];
+    var HEADINGS = {
+      Goddess: 'Goddesses', God: 'Gods', Orisha: 'Orishas',
+      Angel: 'Angels', Saint: 'Saints', Demon: 'Demons — Ars Goetia',
+      Fictional: 'Fictional Figures'
+    };
+
+    ORDER.forEach(function (type) {
+      var group = ENTITIES.filter(function (e) { return e.type === type; });
+      if (group.length === 0) return;
+      group.sort(function (a, b) { return a.name.localeCompare(b.name); });
+
+      var header = document.createElement('div');
+      header.className = 'section';
+      header.textContent = HEADINGS[type] + ' · ' + group.length;
+      results.appendChild(header);
+
+      group.forEach(function (e) { results.appendChild(makeCard(e, null)); });
+    });
+  }
+
+  document.getElementById('divine').addEventListener('click', divine);
+  document.getElementById('browse').addEventListener('click', browse);
+  document.getElementById('intent').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') divine();
+  });
+})();
+</script>
+</body>
+</html>

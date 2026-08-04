@@ -600,10 +600,23 @@
     img.src = url;
   }
 
+  // ---- haptics (Android Chrome; silently no-ops elsewhere) ----
+  var hapticTimer = null;
+  function buzz(pattern) {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+  }
+  function forgeHaptics() {
+    buzz(20); // press pulse
+    clearTimeout(hapticTimer);
+    // completion tick when the draw animation lands (rose draw runs ~1.6s)
+    hapticTimer = setTimeout(function () { buzz([10, 40, 10]); }, state.method === 'rose' ? 1600 : 400);
+  }
+
   // ---- wiring ----
   function forge() {
     state.phrase = document.getElementById('phrase').value;
     render();
+    forgeHaptics();
   }
 
   function setMethod(m) {
@@ -642,6 +655,7 @@
   document.getElementById('reroll').addEventListener('click', function () {
     state.nonce++;
     render();
+    forgeHaptics();
   });
 
   document.getElementById('custom-color').addEventListener('input', function (e) {

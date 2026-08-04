@@ -38,8 +38,8 @@ Turns a typed phrase into a sigil (a personal magical glyph).
 ### 2. Invocation Guide — `invoke.html`
 Matches an intention to mythological/spiritual figures who traditionally govern it.
 
-- **92 figures** across 7 types: Goddesses (33), Gods (28), Angels (12),
-  Demons — Ars Goetia (12), Orishas (3), Saints (2), Fictional (2).
+- **90 figures** across 6 types: Goddesses (33), Gods (28), Angels (12),
+  Demons — Ars Goetia (12), Orishas (3), Saints (2).
 - Traditions span Greek, Roman, Norse, Egyptian, Hindu, Celtic, Sumerian/
   Mesopotamian, Yoruba, Abrahamic, Inca/Andean, Aztec, Maya, and more.
 - **Divine mode:** keyword-matches the user's phrase to ~24 life domains
@@ -98,13 +98,9 @@ server is slightly nicer than `file://`, but both work.)
 The app is trivial to deploy (static files), so most of the work is **content,
 legal, and polish**, not engineering. Ordered by importance:
 
-### 1. Intellectual property — the real blocker
-- **Fictional figures (She-Ra, Rainbow Brite)** are trademarked/copyrighted
-  characters (Mattel/DreamWorks and Hallmark). Fine in a private toy; a public
-  site is a genuine IP gray area, especially if it's ever monetized. **Decide
-  before launch:** remove them, swap in public-domain fictional figures only
-  (e.g. folklore/mythic characters, Arthurian, etc.), or accept the (likely low
-  but real) risk for a non-commercial fan reference.
+### 1. Intellectual property — RESOLVED
+- ~~Fictional figures (She-Ra, Rainbow Brite)~~ Removed Aug 2026 before
+  commercial launch — the site now only features mythological/religious figures.
 - The mythological/religious figures themselves are public domain. The *written
   descriptions* are original to this project, so they're yours to license.
 
@@ -157,7 +153,7 @@ financial, legal, or psychological advice. Put it in a footer on every page.
 - No secrets, env vars, or API keys exist, so nothing to scrub.
 
 ### Suggested pre-launch checklist
-- [ ] Resolve the She-Ra / Rainbow Brite IP question
+- [x] Resolve the She-Ra / Rainbow Brite IP question (removed Aug 2026)
 - [ ] Add/strengthen a footer disclaimer on all three pages
 - [ ] Add a cultural-respect note for living traditions
 - [ ] Add meta tags, Open Graph image, and a favicon

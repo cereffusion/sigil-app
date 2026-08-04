@@ -35,7 +35,12 @@ Paid unlocks, in build order:
 2. **Sigil Library** — save, name, and revisit sigils (localStorage; no accounts)
 3. **Animated export** — the draw animation as a shareable WebM/GIF
 4. **Print-quality PDF export** — 300dpi with bleed, for home framing
-5. **Grimoire palettes** — 6–10 additional premium color schemes
+5. **Effect inks** — premium stroke styles the free custom-color picker can't
+   replicate (flat colors are already free, so premium must be *effects*):
+   Gold Leaf, Ember, Holographic, Starfield, Blood Ritual, UV Glow, Smoke,
+   Verdigris. Built like the existing Glitter mode (gradient stroke + particle
+   layer). Glitter itself stays free as the teaser for the category. Effect
+   inks also carry onto the mailed postcard, upgrading the $8 product.
 
 ### Gating without accounts
 - Web: Stripe Checkout → server issues a signed unlock code (stored in

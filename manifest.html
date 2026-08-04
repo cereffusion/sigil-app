@@ -15,19 +15,39 @@
 <link rel="manifest" href="app.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<script>
+  (function () {
+    var t = localStorage.getItem('sf-theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
 <style>
   :root {
     --bg: #0b0a10;
+    --bg2: #181425;
     --panel: #15131e;
     --ink: #e8e2d0;
     --gold: #c9a84c;
     --dim: #6f6a7e;
+    --line: #2c2840;
+    --line2: #3a3550;
+    --font: Georgia, 'Times New Roman', serif;
+  }
+  :root[data-theme="moon"] {
+    --bg: #0a0e1a; --bg2: #121a30; --panel: #111726; --ink: #c8d0dc;
+    --gold: #8a7fb8; --dim: #5c667a; --line: #232c42; --line2: #32405e;
+    --font: 'Palatino Linotype', Georgia, serif;
+  }
+  :root[data-theme="neon"] {
+    --bg: #0d0a12; --bg2: #1a1024; --panel: #16101e; --ink: #f4eaff;
+    --gold: #ff2d95; --dim: #7a6a8a; --line: #2e2040; --line2: #46305e;
+    --font: 'Courier New', Courier, monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: radial-gradient(ellipse at 50% 30%, #181425 0%, var(--bg) 70%);
+    background: radial-gradient(ellipse at 50% 30%, var(--bg2) 0%, var(--bg) 70%);
     color: var(--ink);
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: var(--font);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -51,7 +71,7 @@
     color: var(--ink);
     font-size: 0.85rem;
     margin-bottom: 1.2rem;
-    border: 1px solid #2c2840;
+    border: 1px solid var(--line);
     border-radius: 999px;
     padding: 0.35rem 0.9rem;
     background: var(--panel);
@@ -61,7 +81,7 @@
     width: 100%;
     max-width: 680px;
     background: var(--panel);
-    border: 1px solid #2c2840;
+    border: 1px solid var(--line);
     border-radius: 8px;
     padding: 1.2rem 1.3rem;
     margin-bottom: 1.4rem;
@@ -72,7 +92,7 @@
   .chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
   .chip-btn {
     background: transparent;
-    border: 1px solid #3a3550;
+    border: 1px solid var(--line2);
     color: var(--dim);
     font-family: inherit;
     font-size: 0.82rem;
@@ -98,8 +118,8 @@
     transition: background 0.2s, color 0.2s;
   }
   button.act:hover { background: var(--gold); color: var(--bg); }
-  button.act.secondary { border-color: #3a3550; color: var(--dim); }
-  button.act.secondary:hover { background: #3a3550; color: var(--ink); }
+  button.act.secondary { border-color: var(--line2); color: var(--dim); }
+  button.act.secondary:hover { background: var(--line2); color: var(--ink); }
   .finder-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
   .reading {
     color: var(--dim);
@@ -123,13 +143,13 @@
     letter-spacing: 0.3em;
     text-transform: uppercase;
     font-size: 0.85rem;
-    border-bottom: 1px solid #2c2840;
+    border-bottom: 1px solid var(--line);
     padding-bottom: 0.4rem;
     margin-top: 0.9rem;
   }
   .card {
     background: var(--panel);
-    border: 1px solid #2c2840;
+    border: 1px solid var(--line);
     border-radius: 8px;
     padding: 1rem 1.15rem;
   }
@@ -171,12 +191,20 @@
   .tip-jar {
     margin-top: 3rem;
     padding: 1.5rem;
-    border: 1px solid #2c2840;
+    border: 1px solid var(--line);
     border-radius: 8px;
-    background: linear-gradient(135deg, #15131e 0%, #1a1725 100%);
+    background: var(--panel);
     text-align: center;
     box-shadow: 0 0 40px rgba(201, 168, 76, 0.04);
   }
+  .theme-pick {
+    position: fixed; top: 14px; right: 16px; display: flex; gap: 8px; z-index: 80;
+  }
+  .theme-pick button {
+    width: 20px; height: 20px; border-radius: 50%; cursor: pointer; padding: 0;
+    border: 2px solid var(--line2);
+  }
+  .theme-pick button.on { border-color: var(--ink); transform: scale(1.15); }
   .tip-jar-label {
     color: var(--dim);
     font-size: 0.75rem;
@@ -187,8 +215,8 @@
   .tip-jar a {
     display: inline-block;
     padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, var(--gold) 0%, #a88a3a 100%);
-    color: #0b0a10;
+    background: var(--gold);
+    color: var(--bg);
     text-decoration: none;
     border-radius: 4px;
     font-weight: bold;
@@ -679,8 +707,31 @@
   <a href="https://buy.stripe.com/eVq4gz81w9D86LtfTx8so00" target="_blank">Leave a Tip</a>
 </div>
 
+<div class="theme-pick" id="theme-pick">
+  <button data-t="" style="background:#c9a84c" title="Midnight"></button>
+  <button data-t="moon" style="background:#c8d0dc" title="Moon Phase"></button>
+  <button data-t="neon" style="background:#ff2d95" title="Ritual Neon"></button>
+</div>
+
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+(function () {
+  var btns = document.querySelectorAll('#theme-pick button');
+  function mark() {
+    var cur = localStorage.getItem('sf-theme') || '';
+    btns.forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-t') === cur); });
+  }
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.getAttribute('data-t');
+      if (t) { localStorage.setItem('sf-theme', t); document.documentElement.setAttribute('data-theme', t); }
+      else { localStorage.removeItem('sf-theme'); document.documentElement.removeAttribute('data-theme'); }
+      mark();
+    });
+  });
+  mark();
+})();
 </script>
 
 </body>

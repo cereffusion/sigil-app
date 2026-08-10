@@ -240,6 +240,18 @@
     text-align: center;
     box-shadow: 0 0 40px rgba(201, 168, 76, 0.04);
   }
+  .grim-row {
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+    gap: 0.55rem; margin: -0.4rem 0 1.2rem; max-width: 520px;
+  }
+  .grim-title {
+    font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); margin-right: 0.2rem;
+  }
+  .grim-state {
+    font-size: 0.62rem; letter-spacing: 0.12em; color: var(--dim);
+    text-transform: uppercase; cursor: pointer; text-decoration: underline dotted;
+  }
   .theme-pick {
     position: fixed; top: 14px; right: 16px; display: flex; gap: 8px; z-index: 80;
   }
@@ -310,6 +322,19 @@
   <button class="swatch" data-ink="#ff2d95" data-accent="#b01060" style="background:#ff2d95" title="Hot Pink"></button>
   <button class="swatch" data-ink="#5e2b8a" data-accent="#8e5bc0" style="background:#5e2b8a" title="Dark Purple"></button>
   <input type="color" id="custom-color" value="#e8e2d0" title="Custom color">
+</div>
+
+<div class="grim-row" id="grim-row">
+  <span class="grim-title">✦ Grimoire inks</span>
+  <button class="swatch grim" data-ink="goldleaf" style="background:linear-gradient(135deg,#f4e2a0,#c9a84c 40%,#fff2c8 60%,#a8842e)" title="Gold Leaf"></button>
+  <button class="swatch grim" data-ink="ember" style="background:linear-gradient(135deg,#ff9a3c,#e8420a 60%,#8a1a02)" title="Ember"></button>
+  <button class="swatch grim" data-ink="holo" style="background:linear-gradient(135deg,#a0fff2,#a0c8ff 30%,#e0a0ff 55%,#ffa0d0 80%,#a0ffc8)" title="Holographic"></button>
+  <button class="swatch grim" data-ink="starfield" style="background:linear-gradient(135deg,#8aa8ff,#4a6ad8 55%,#20308a)" title="Starfield"></button>
+  <button class="swatch grim" data-ink="blood" style="background:linear-gradient(135deg,#d83a3a,#8a1020 60%,#4a0410)" title="Blood Ritual"></button>
+  <button class="swatch grim" data-ink="uv" style="background:#c86aff;box-shadow:0 0 8px rgba(200,106,255,0.8)" title="UV Glow"></button>
+  <button class="swatch grim" data-ink="smoke" style="background:linear-gradient(135deg,#b8b2c8,#7a7290 55%,#4a4458)" title="Smoke"></button>
+  <button class="swatch grim" data-ink="verdigris" style="background:linear-gradient(135deg,#8ad8c0,#3a9a80 50%,#1a5a4a)" title="Verdigris"></button>
+  <span class="grim-state" id="grim-state"></span>
 </div>
 
 <div class="chaos-row">
@@ -403,8 +428,73 @@
     return el;
   }
 
-  // glitter ink renders as an iridescent gradient stroke plus sparkles
+  // ---- Grimoire effect inks ----
+  // Premium stroke styles: gradient (or glow) strokes plus a particle layer.
+  // Free "glitter" uses the same machinery and stays free as the teaser.
+  var EFFECT_INKS = {
+    goldleaf: {
+      label: 'Gold Leaf', accent: '#8a6d2f',
+      grad: [['0%','#f4e2a0'],['30%','#c9a84c'],['55%','#fff2c8'],['80%','#a8842e'],['100%','#e6c86e']],
+      sparkle: { colors: ['#fff2c8','#ffe9a0','#ffffff'], n: 26, star: 0.5 }
+    },
+    ember: {
+      label: 'Ember', accent: '#e8420a',
+      grad: [['0%','#ff9a3c'],['45%','#e8420a'],['100%','#8a1a02']],
+      sparkle: { colors: ['#ffb066','#ff7a2a','#ffd9a0'], n: 34, star: 0.15 },
+      glow: 'rgba(232,66,10,0.55)'
+    },
+    holo: {
+      label: 'Holographic', accent: '#c8b6ff',
+      grad: [['0%','#a0fff2'],['25%','#a0c8ff'],['50%','#e0a0ff'],['75%','#ffa0d0'],['100%','#a0ffc8']],
+      sparkle: { colors: ['#ffffff','#e0f4ff','#ffe0f8'], n: 30, star: 0.45 }
+    },
+    starfield: {
+      label: 'Starfield', accent: '#8aa8ff',
+      grad: [['0%','#8aa8ff'],['50%','#4a6ad8'],['100%','#20308a']],
+      sparkle: { colors: ['#ffffff','#d8e4ff','#fff4c8'], n: 56, star: 0.3, tiny: true }
+    },
+    blood: {
+      label: 'Blood Ritual', accent: '#8a1020',
+      grad: [['0%','#d83a3a'],['50%','#8a1020'],['100%','#4a0410']],
+      drips: true
+    },
+    uv: {
+      label: 'UV Glow', accent: '#8a2ad8',
+      solid: '#c86aff', glow: 'rgba(200,106,255,0.75)'
+    },
+    smoke: {
+      label: 'Smoke', accent: '#7a7290',
+      grad: [['0%','#b8b2c8'],['50%','#7a7290'],['100%','#4a4458']],
+      glow: 'rgba(122,114,144,0.5)'
+    },
+    verdigris: {
+      label: 'Verdigris', accent: '#3a9a80',
+      grad: [['0%','#8ad8c0'],['40%','#3a9a80'],['100%','#1a5a4a']],
+      sparkle: { colors: ['#1a5a4a','#8ad8c0','#c8a86a'], n: 18, star: 0, tiny: true }
+    }
+  };
+
+  function isEffectInk() { return !!EFFECT_INKS[state.ink]; }
+  function grimUnlocked() { return localStorage.getItem('sf-grimoire') === 'yes'; }
+
+  // gradient / glow stroke resolution for glitter + effect inks
   function resolveInk(svg) {
+    svg.style.filter = '';
+    var fx = EFFECT_INKS[state.ink];
+    if (fx) {
+      if (fx.glow) svg.style.filter = 'drop-shadow(0 0 7px ' + fx.glow + ')';
+      if (fx.solid) return fx.solid;
+      var defsE = svgEl('defs', {});
+      var gradE = svgEl('linearGradient', {
+        id: 'fxGrad', x1: '0%', y1: '0%', x2: '100%', y2: '100%'
+      });
+      fx.grad.forEach(function (s) {
+        gradE.appendChild(svgEl('stop', { offset: s[0], 'stop-color': s[1] }));
+      });
+      defsE.appendChild(gradE);
+      svg.appendChild(defsE);
+      return 'url(#fxGrad)';
+    }
     if (state.ink !== 'glitter') return state.ink;
     var defs = svgEl('defs', {});
     var grad = svgEl('linearGradient', {
@@ -419,7 +509,53 @@
     return 'url(#glitterGrad)';
   }
 
+  // particle layer for effect inks: sparkles, embers, stars, drips
+  function addInkFx(svg) {
+    var fx = EFFECT_INKS[state.ink];
+    if (!fx) return;
+    if (fx.sparkle) {
+      var sp = fx.sparkle;
+      for (var i = 0; i < sp.n; i++) {
+        var angle = Math.random() * Math.PI * 2;
+        var dist = Math.random() * 235;
+        var x = CX + dist * Math.cos(angle);
+        var y = CY + dist * Math.sin(angle);
+        var r = (sp.tiny ? 0.6 : 1) + Math.random() * (sp.tiny ? 1.2 : 2.2);
+        if (Math.random() < sp.star) {
+          var s = r * 3;
+          svg.appendChild(svgEl('path', {
+            d: 'M' + x + ' ' + (y - s) +
+               ' Q' + x + ' ' + y + ' ' + (x + s) + ' ' + y +
+               ' Q' + x + ' ' + y + ' ' + x + ' ' + (y + s) +
+               ' Q' + x + ' ' + y + ' ' + (x - s) + ' ' + y +
+               ' Q' + x + ' ' + y + ' ' + x + ' ' + (y - s) + ' Z',
+            fill: sp.colors[i % sp.colors.length],
+            opacity: 0.4 + Math.random() * 0.6
+          }));
+        } else {
+          svg.appendChild(svgEl('circle', {
+            cx: x, cy: y, r: r,
+            fill: sp.colors[i % sp.colors.length],
+            opacity: 0.3 + Math.random() * 0.5
+          }));
+        }
+      }
+    }
+    if (fx.drips) {
+      for (var d = 0; d < 7; d++) {
+        var dx = CX + (Math.random() - 0.5) * 380;
+        var dy = CY + 40 + Math.random() * 200;
+        var dr = 1.5 + Math.random() * 3;
+        svg.appendChild(svgEl('ellipse', {
+          cx: dx, cy: dy, rx: dr, ry: dr * (1.6 + Math.random()),
+          fill: '#8a1020', opacity: 0.35 + Math.random() * 0.4
+        }));
+      }
+    }
+  }
+
   function addSparkles(svg) {
+    addInkFx(svg);
     if (state.ink !== 'glitter') return;
     var colors = ['#ffffff', '#ffd1ec', '#b5e8ff', '#ffe9b5'];
     for (var i = 0; i < 40; i++) {
@@ -716,8 +852,14 @@
   });
   document.getElementById('btn-rose').addEventListener('click', function () { setMethod('rose'); });
   document.getElementById('btn-overlay').addEventListener('click', function () { setMethod('overlay'); });
-  document.getElementById('dl-svg').addEventListener('click', downloadSvg);
-  document.getElementById('dl-png').addEventListener('click', downloadPng);
+  document.getElementById('dl-svg').addEventListener('click', function () {
+    if (window.sfGrim.locked()) return window.sfGrim.open();
+    downloadSvg();
+  });
+  document.getElementById('dl-png').addEventListener('click', function () {
+    if (window.sfGrim.locked()) return window.sfGrim.open();
+    downloadPng();
+  });
 
   var swatches = document.querySelectorAll('#palette .swatch');
   swatches.forEach(function (sw) {
@@ -746,8 +888,52 @@
     state.ink = e.target.value;
     state.accent = e.target.value;
     swatches.forEach(function (s) { s.classList.remove('active'); });
+    grimSwatches.forEach(function (s) { s.classList.remove('active'); });
     render();
+    updateGrimState();
   });
+
+  // ---- Grimoire ink swatches: preview freely, unlock to export ----
+  var grimSwatches = document.querySelectorAll('#grim-row .swatch.grim');
+  grimSwatches.forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      var key = sw.getAttribute('data-ink');
+      state.ink = key;
+      state.accent = EFFECT_INKS[key].accent;
+      swatches.forEach(function (s) { s.classList.remove('active'); });
+      grimSwatches.forEach(function (s) { s.classList.remove('active'); });
+      sw.classList.add('active');
+      render();
+      updateGrimState();
+    });
+  });
+  swatches.forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      grimSwatches.forEach(function (s) { s.classList.remove('active'); });
+      updateGrimState();
+    });
+  });
+
+  function updateGrimState() {
+    var el = document.getElementById('grim-state');
+    if (grimUnlocked()) {
+      el.textContent = 'unlocked ✦';
+      el.style.textDecoration = 'none';
+      el.style.cursor = 'default';
+    } else {
+      el.textContent = isEffectInk() ? 'previewing — unlock to export' : 'unlock · $4.99';
+    }
+  }
+  updateGrimState();
+  document.getElementById('grim-state').addEventListener('click', function () {
+    if (!grimUnlocked()) window.sfGrim.open();
+  });
+
+  window.sfGrim = {
+    locked: function () { return isEffectInk() && !grimUnlocked(); },
+    open: function () { document.getElementById('grim-overlay').classList.add('open'); },
+    refresh: updateGrimState
+  };
 
   var incoming = new URLSearchParams(location.search).get('phrase');
   if (incoming) document.getElementById('phrase').value = incoming;
@@ -810,6 +996,38 @@ Your intention phrase is not printed anywhere — the mark keeps its secret.</di
 
 <div class="toast" id="toast">✦ Your sigil is on its way to the printer ✦</div>
 
+<div class="mail-overlay" id="grim-overlay">
+  <div class="mail-modal">
+    <h2>The Grimoire</h2>
+    <div class="mm-sub">Effect inks, the servitor builder, your sigil library &amp; more — $4.99, once, forever.</div>
+
+    <ul style="color:var(--dim);font-size:0.82rem;line-height:1.9;margin:0 0 1rem 1.1rem;">
+      <li>8 effect inks — Gold Leaf, Ember, Holographic, Starfield, Blood Ritual, UV Glow, Smoke, Verdigris</li>
+      <li>Servitor Builder — charter, form &amp; seal, feeding rituals</li>
+      <li>Sigil Library — save and revisit your marks</li>
+      <li>Effect inks print on mailed postcards too</li>
+    </ul>
+
+    <label for="grim-email">Your email (your unlock code is sent here)</label>
+    <input type="email" id="grim-email" placeholder="you@example.com" autocomplete="email">
+
+    <div class="mm-actions">
+      <button id="grim-buy">Unlock — $4.99 →</button>
+      <button class="secondary" id="grim-cancel">Not now</button>
+    </div>
+
+    <div style="border-top:1px dashed var(--line);margin:1.2rem 0 0.9rem;"></div>
+
+    <label for="grim-code">Already have a code?</label>
+    <input type="text" id="grim-code" placeholder="GRIM-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase">
+    <div class="mm-error" id="grim-error"></div>
+    <div class="mm-actions">
+      <button class="secondary" id="grim-redeem">Redeem Code</button>
+      <button class="secondary" id="grim-restore">Lost it? Re-send by email</button>
+    </div>
+  </div>
+</div>
+
 <div class="theme-pick" id="theme-pick">
   <button data-t="" style="background:#c9a84c" title="Midnight"></button>
   <button data-t="moon" style="background:#c8d0dc" title="Moon Phase"></button>
@@ -843,6 +1061,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   var overlay = document.getElementById('mail-overlay');
 
   document.getElementById('mail-open').addEventListener('click', function () {
+    if (window.sfGrim.locked()) return window.sfGrim.open();
     overlay.classList.add('open');
   });
   document.getElementById('mm-cancel').addEventListener('click', function () {
@@ -906,6 +1125,86 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     toast.style.display = 'block';
     history.replaceState(null, '', location.pathname);
     setTimeout(function () { toast.style.display = 'none'; }, 6000);
+  }
+})();
+
+// ---- The Grimoire: purchase + redeem ----
+(function () {
+  var GRIM_API = 'https://www.mailamix.com/api';
+  var overlay = document.getElementById('grim-overlay');
+  var err = document.getElementById('grim-error');
+
+  document.getElementById('grim-cancel').addEventListener('click', function () {
+    overlay.classList.remove('open');
+  });
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+
+  document.getElementById('grim-buy').addEventListener('click', function () {
+    err.textContent = '';
+    var email = document.getElementById('grim-email').value.trim();
+    if (!email || email.indexOf('@') < 1) { err.textContent = 'Enter your email — your unlock code is sent there.'; return; }
+    var btn = document.getElementById('grim-buy');
+    btn.disabled = true; btn.textContent = 'Summoning checkout…';
+    fetch(GRIM_API + '/grimoire-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email }),
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.d.url) throw new Error(res.d.error || 'Checkout failed');
+        window.location.href = res.d.url;
+      })
+      .catch(function (e) {
+        err.textContent = e.message;
+        btn.disabled = false; btn.textContent = 'Unlock — $4.99 →';
+      });
+  });
+
+  document.getElementById('grim-redeem').addEventListener('click', function () {
+    err.textContent = '';
+    var code = document.getElementById('grim-code').value.trim().toUpperCase();
+    if (!code) { err.textContent = 'Enter your code.'; return; }
+    fetch(GRIM_API + '/grimoire-verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: code }),
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.d.valid) throw new Error(res.d.error || 'That code was not recognized.');
+        localStorage.setItem('sf-grimoire', 'yes');
+        localStorage.setItem('sf-grimoire-code', code);
+        overlay.classList.remove('open');
+        window.sfGrim.refresh();
+        var toast = document.getElementById('toast');
+        toast.textContent = '✦ The Grimoire is open ✦';
+        toast.style.display = 'block';
+        setTimeout(function () { toast.style.display = 'none'; }, 5000);
+      })
+      .catch(function (e) { err.textContent = e.message; });
+  });
+
+  document.getElementById('grim-restore').addEventListener('click', function () {
+    err.textContent = '';
+    var email = document.getElementById('grim-email').value.trim();
+    if (!email || email.indexOf('@') < 1) { err.textContent = 'Enter the email you purchased with (top field).'; return; }
+    fetch(GRIM_API + '/grimoire-restore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { err.textContent = d.message || 'If a code exists for that email, it has been re-sent.'; })
+      .catch(function () { err.textContent = 'Could not reach the server — try again.'; });
+  });
+
+  if (new URLSearchParams(location.search).get('grimoire') === 'paid') {
+    history.replaceState(null, '', location.pathname);
+    overlay.classList.add('open');
+    err.textContent = 'Payment received ✦ — your code is on its way to your inbox. Enter it above when it arrives.';
   }
 })();
 </script>

@@ -123,8 +123,9 @@
   .duo { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1.1rem; align-items: flex-start; }
   .glyphbox {
     background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px;
+    max-width: 100%;
   }
-  .glyphbox svg { display: block; width: 280px; height: 280px; max-width: 76vw; }
+  .glyphbox svg { display: block; width: 280px; max-width: calc(100vw - 120px); height: auto; aspect-ratio: 1 / 1; }
   .glyphbox .cap { text-align: center; color: var(--dim); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; margin-top: 6px; }
   .readout { flex: 1 1 220px; min-width: 220px; }
   .readout .rname { font-size: 1.5rem; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.6rem; }
@@ -184,9 +185,11 @@
   .tip-jar-label { color: var(--dim); font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem; }
   .tip-jar a { display: inline-block; padding: 0.6rem 1.2rem; background: var(--gold); color: var(--bg); text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem; letter-spacing: 0.15em; }
   @media print {
-    body > *:not(#print-sheet) { display: none !important; }
-    body { background: #fff; color: #000; padding: 0; }
-    #print-sheet { display: block !important; color: #000; font-family: Georgia, serif; padding: 2rem; }
+    /* only hijack printing when the charter sheet was explicitly populated
+       (Print charter button) — plain Ctrl+P prints the page as-is */
+    body.printing > *:not(#print-sheet) { display: none !important; }
+    body.printing { background: #fff; color: #000; padding: 0; }
+    body.printing #print-sheet { display: block !important; color: #000; font-family: Georgia, serif; padding: 2rem; }
     #print-sheet h2 { letter-spacing: 0.2em; text-transform: uppercase; font-size: 1.1rem; margin-bottom: 1rem; }
     #print-sheet .prow { margin-bottom: 0.55rem; font-size: 0.95rem; }
     #print-sheet .plabel { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: #666; }
@@ -512,7 +515,16 @@ does not act on any specific named person
   var nonce = 0;
   var chosenArch = null;   // set when a gallery tile is clicked
   var domainOverride = null;
-  var current = null;      // last generated {name, job, cat, archetype, material, behavior, seed}
+  var current = null;      // last generated {charter, archetype, material, behavior, seed}
+  var pendingAction = null; // gated action to resume after an unlock
+
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function panelColor() {
+    var v = getComputedStyle(document.documentElement).getPropertyValue('--panel');
+    return (v || '').trim() || '#15131e';
+  }
 
   function el(name, attrs) {
     var e = document.createElementNS(SVGNS, name);
@@ -873,7 +885,7 @@ does not act on any specific named person
   function renderForm(svg, archetype, seed, uid) {
     rng = mulberry32(seed);
     while (svg.firstChild) svg.removeChild(svg.firstChild);
-    svg.appendChild(el('rect', { x: 0, y: 0, width: 400, height: 400, fill: '#15131e' }));
+    svg.appendChild(el('rect', { x: 0, y: 0, width: 400, height: 400, fill: panelColor() }));
     var stroke = strokeColor(svg, uid);
     DRAW[archetype](svg, stroke);
     if (palette.ink === 'glitter') {
@@ -911,12 +923,13 @@ does not act on any specific named person
       : (document.getElementById('sv-name').value || '');
     var kept = distill(src);
     var ink = palette.ink === 'glitter' ? '#e8b6ff' : palette.ink;
-    svg.appendChild(el('rect', { x: 0, y: 0, width: 600, height: 600, fill: '#15131e' }));
+    svg.appendChild(el('rect', { x: 0, y: 0, width: 600, height: 600, fill: panelColor() }));
     svg.appendChild(el('circle', { cx: 300, cy: 300, r: 270, fill: 'none', stroke: palette.accent, 'stroke-width': 1.5, opacity: 0.5 }));
     svg.appendChild(el('circle', { cx: 300, cy: 300, r: 258, fill: 'none', stroke: palette.accent, 'stroke-width': 0.75, opacity: 0.35 }));
     var lettersEl = document.getElementById('sv-seal-letters');
     if (kept.length === 0) {
       lettersEl.textContent = 'name the servitor to raise its seal';
+      document.getElementById('sv-forge-link').href = 'index.html';
       return;
     }
     lettersEl.textContent = 'distilled: ' + kept.join(' · ');
@@ -947,8 +960,8 @@ does not act on any specific named person
       feed: document.getElementById('sv-feed').value,
       line: (document.getElementById('sv-line').value || '').trim() ||
             (name ? name + ', ' + (job || 'do your work') + ', easily.' : ''),
-      daily: parseInt(document.getElementById('sv-daily').value, 10) || 14,
-      weekly: parseInt(document.getElementById('sv-weekly').value, 10) || 2,
+      daily: Math.min(60, Math.max(3, parseInt(document.getElementById('sv-daily').value, 10) || 14)),
+      weekly: Math.min(7, Math.max(1, parseInt(document.getElementById('sv-weekly').value, 10) || 2)),
       end: (document.getElementById('sv-end').value || '').trim(),
       sign: (document.getElementById('sv-sign').value || '').trim(),
       sealSrc: sealSource,
@@ -959,7 +972,11 @@ does not act on any specific named person
   function generate() {
     var c = charter();
     if (!c.name) { document.getElementById('sv-name').focus(); return; }
-    var seed = hashString(c.name + '|' + c.job + '|' + nonce);
+    // when an archetype was chosen from the gallery, use the exact tile seed so
+    // the drawing the user clicked is the drawing they get; either way, one seed
+    // deterministically drives archetype, material, behavior, and the drawing
+    var base = c.name + '|' + c.job + '|' + nonce;
+    var seed = chosenArch ? hashString(base + '|' + chosenArch) : hashString(base);
     rng = mulberry32(seed);
     var spec = CATEGORY[c.domain] || CATEGORY['default'];
     var archetype = chosenArch || pick(spec.arch);
@@ -971,8 +988,8 @@ does not act on any specific named person
     document.getElementById('sv-out-desc').textContent =
       c.name + ' appears as a ' + material + ' ' + ARCH_NOUN[archetype] + ' that ' + behavior + '.';
     document.getElementById('sv-out-meta').innerHTML =
-      'job: ' + (c.job || '<em>(none given)</em>') + '<br>' +
-      'domain: ' + c.domain + ' · form: ' + ARCH_NOUN[archetype] + '<br>' +
+      'job: ' + (c.job ? esc(c.job) : '<em>(none given)</em>') + '<br>' +
+      'domain: ' + esc(c.domain) + ' · form: ' + ARCH_NOUN[archetype] + '<br>' +
       'feeds: daily × ' + c.daily + ' days, then ' + c.weekly + '/week';
 
     renderForm(document.getElementById('sv-form-svg'), archetype, seed, 'main');
@@ -1018,19 +1035,33 @@ does not act on any specific named person
   // ---- grimoire gating ----
   function grimUnlocked() { return localStorage.getItem('sf-grimoire') === 'yes'; }
   function openGrim() { document.getElementById('grim-overlay').classList.add('open'); }
+  // validation runs BEFORE the paywall (a curious click on an empty page gets
+  // the honest error, not a purchase modal), and the intercepted action resumes
+  // automatically after a successful unlock
   function gated(fn) {
-    return function () {
-      if (!grimUnlocked()) return openGrim();
+    var wrapped = function () {
+      if (!requireCurrent()) return;
+      if (!grimUnlocked()) { pendingAction = wrapped; return openGrim(); }
+      refreshCharter();
       fn();
     };
+    return wrapped;
+  }
+  // exports must reflect what the fields say NOW, not the last generate() snapshot
+  function refreshCharter() {
+    if (!current) return;
+    current.charter = charter();
+    updateRituals(current.charter);
   }
 
   // ---- keep: save / ics / svg / print ----
+  var toastTimer = null;
   function toast(msg) {
     var t = document.getElementById('toast');
     t.textContent = msg;
     t.style.display = 'block';
-    setTimeout(function () { t.style.display = 'none'; }, 4500);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.style.display = 'none'; }, 4500);
   }
   function requireCurrent() {
     if (!current) {
@@ -1062,17 +1093,17 @@ does not act on any specific named person
       var label = document.createElement('span');
       label.textContent = '✦ ' + s.charter.name;
       label.title = s.desc;
-      label.addEventListener('click', function () { loadServitor(s); });
       var x = document.createElement('span');
       x.className = 'x';
       x.textContent = '×';
       x.title = 'Retire ' + s.charter.name;
       x.addEventListener('click', function (ev) {
         ev.stopPropagation();
-        if (!confirm('Retire ' + s.charter.name + '? Run the retirement ritual first (step IV), then confirm. This deletes it.')) return;
+        if (!confirm('Retire ' + s.charter.name + '? Say aloud: "' + s.charter.name + ', your work is done. Thank you. You are released. It is finished." — then confirm. This removes it from your roster.')) return;
         saveRoster(loadRoster().filter(function (r) { return r.id !== s.id; }));
         toast('✦ ' + s.charter.name + ' is released. It is finished. ✦');
       });
+      chip.addEventListener('click', function () { loadServitor(s); });
       chip.appendChild(label);
       chip.appendChild(x);
       ul.appendChild(chip);
@@ -1097,22 +1128,24 @@ does not act on any specific named person
     document.querySelectorAll('#sv-palette .swatch').forEach(function (sw) {
       sw.classList.toggle('active', sw.getAttribute('data-ink') === c.ink);
     });
-    chosenArch = s.archetype;
+    // restore chosenArch exactly as it was at bind time (null when the archetype
+    // was seed-drawn) so the recalled creature is byte-identical to the bound one
+    chosenArch = ('chosen' in s) ? s.chosen : s.archetype;
     nonce = s.nonce || 0;
     generate();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   var bind = gated(function () {
-    if (!requireCurrent()) return;
     var list = loadRoster();
-    var id = current.charter.name.toLowerCase() + '-' + current.seed;
+    var id = current.charter.name.toLowerCase();
     list = list.filter(function (r) { return r.id !== id; });
     list.push({
       id: id,
       created: new Date().toISOString(),
       charter: current.charter,
       archetype: current.archetype,
+      chosen: chosenArch,
       nonce: nonce,
       desc: document.getElementById('sv-out-desc').textContent,
     });
@@ -1124,8 +1157,15 @@ does not act on any specific named person
   function icsDate(d) {
     return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + 'T210000';
   }
+  function icsStamp() {
+    var d = new Date();
+    return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) +
+      'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + pad(d.getUTCSeconds()) + 'Z';
+  }
+  function icsText(s) {
+    return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+  }
   var downloadIcs = gated(function () {
-    if (!requireCurrent()) return;
     var c = current.charter;
     var start = new Date();
     start.setDate(start.getDate() + 1);
@@ -1136,23 +1176,27 @@ does not act on any specific named person
     for (var i = 0; i < Math.min(c.weekly, 7); i++) {
       byday.push(days[(weeklyStart.getDay() + Math.round(i * 7 / c.weekly)) % 7]);
     }
+    var stamp = icsStamp();
+    var desc = icsText(c.line || 'Glance at the seal. Picture it working. Let go.');
     var lines = [
       'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SigilForge//Servitor//EN',
       'BEGIN:VEVENT',
       'UID:sv-daily-' + current.seed + '@sigilforge',
+      'DTSTAMP:' + stamp,
       'DTSTART:' + icsDate(start),
       'DURATION:PT5M',
       'RRULE:FREQ=DAILY;COUNT=' + c.daily,
-      'SUMMARY:Feed ' + c.name,
-      'DESCRIPTION:' + (c.line || 'Glance at the seal. Picture it working. Let go.').replace(/,/g, '\\,'),
+      'SUMMARY:Feed ' + icsText(c.name),
+      'DESCRIPTION:' + desc,
       'END:VEVENT',
       'BEGIN:VEVENT',
       'UID:sv-weekly-' + current.seed + '@sigilforge',
+      'DTSTAMP:' + stamp,
       'DTSTART:' + icsDate(weeklyStart),
       'DURATION:PT5M',
       'RRULE:FREQ=WEEKLY;BYDAY=' + byday.join(',') + ';COUNT=' + (c.weekly * 26),
-      'SUMMARY:Feed ' + c.name,
-      'DESCRIPTION:' + (c.line || 'Glance at the seal. Picture it working. Let go.').replace(/,/g, '\\,'),
+      'SUMMARY:Feed ' + icsText(c.name),
+      'DESCRIPTION:' + desc,
       'END:VEVENT',
       'END:VCALENDAR',
     ];
@@ -1174,31 +1218,39 @@ does not act on any specific named person
     a.click();
     URL.revokeObjectURL(a.href);
   }
-  var saveForm = gated(function () { if (requireCurrent()) saveSvg('sv-form-svg', 'form'); });
-  var saveSeal = gated(function () { if (requireCurrent()) saveSvg('sv-seal-svg', 'seal'); });
+  var saveForm = gated(function () { saveSvg('sv-form-svg', 'form'); });
+  var saveSeal = gated(function () { saveSvg('sv-seal-svg', 'seal'); });
 
   var printCharter = gated(function () {
-    if (!requireCurrent()) return;
     var c = current.charter;
     var sheet = document.getElementById('print-sheet');
     function row(label, val) {
-      return '<div class="prow"><span class="plabel">' + label + '</span><br>' + (val || '—') + '</div>';
+      return '<div class="prow"><span class="plabel">' + esc(label) + '</span><br>' + (val ? esc(val) : '—') + '</div>';
+    }
+    // clone the svgs without ids so the sheet never duplicates live element ids
+    function svgCopy(id) {
+      return document.getElementById(id).outerHTML.replace(/\sid="[^"]*"/g, '');
     }
     sheet.innerHTML =
-      '<h2>Charter of ' + c.name + '</h2>' +
+      '<h2>Charter of ' + esc(c.name) + '</h2>' +
       '<div class="pglyphs">' +
-        '<div>' + document.getElementById('sv-form-svg').outerHTML + '</div>' +
-        '<div>' + document.getElementById('sv-seal-svg').outerHTML + '</div>' +
+        '<div>' + svgCopy('sv-form-svg') + '</div>' +
+        '<div>' + svgCopy('sv-seal-svg') + '</div>' +
       '</div>' +
       row('One job', c.job) +
       row('Domain', c.domain) +
       row('Form', document.getElementById('sv-out-desc').textContent) +
-      row('Limits', c.limits.replace(/\n/g, '<br>')) +
+      '<div class="prow"><span class="plabel">Limits</span><br>' + esc(c.limits).replace(/\n/g, '<br>') + '</div>' +
       row('Feed', c.feed + ' — daily for ' + c.daily + ' days, then ' + c.weekly + '/week') +
       row('Spoken line', c.line) +
       row('Lifespan / end condition', c.end) +
       row('The sign it landed', c.sign);
+    document.body.classList.add('printing');
     window.print();
+  });
+  window.addEventListener('afterprint', function () {
+    document.body.classList.remove('printing');
+    document.getElementById('print-sheet').innerHTML = '';
   });
 
   // ---- wiring ----
@@ -1272,6 +1324,22 @@ does not act on any specific named person
   renderRoster();
   renderSeal();
 
+  // restore a draft stashed before a Stripe round trip, and greet a returning
+  // buyer with the redeem prompt
+  (function () {
+    var draft = null;
+    try { draft = JSON.parse(localStorage.getItem('sf-servitor-draft') || 'null'); } catch (e) {}
+    if (draft && draft.charter && draft.charter.name) {
+      try { loadServitor(draft); } catch (e) {}
+    }
+    if (new URLSearchParams(location.search).get('grimoire') === 'paid') {
+      history.replaceState(null, '', location.pathname);
+      openGrim();
+      document.getElementById('grim-error').textContent =
+        'Payment received ✦ — your code is on its way to your inbox. Enter it above when it arrives; your charter is safe below.';
+    }
+  })();
+
   // ---- grimoire modal ----
   var GRIM_API = 'https://www.mailamix.com/api';
   var overlay = document.getElementById('grim-overlay');
@@ -1283,11 +1351,22 @@ does not act on any specific named person
     err.textContent = '';
     var email = document.getElementById('grim-email').value.trim();
     if (!email || email.indexOf('@') < 1) { err.textContent = 'Enter your email — your unlock code is sent there.'; return; }
+    // navigating to Stripe destroys the page state — stash the draft so the
+    // charter the user is paying to keep survives the round trip
+    if (current) {
+      try {
+        localStorage.setItem('sf-servitor-draft', JSON.stringify({
+          charter: current.charter, archetype: current.archetype,
+          chosen: chosenArch, nonce: nonce,
+          desc: document.getElementById('sv-out-desc').textContent,
+        }));
+      } catch (e) {}
+    }
     var btn = document.getElementById('grim-buy');
     btn.disabled = true; btn.textContent = 'Summoning checkout…';
     fetch(GRIM_API + '/grimoire-checkout', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email }),
+      body: JSON.stringify({ email: email, page: '/servitor.html' }),
     })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
@@ -1316,8 +1395,22 @@ does not act on any specific named person
         localStorage.setItem('sf-grimoire-code', code);
         overlay.classList.remove('open');
         toast('✦ The Grimoire is open ✦');
+        localStorage.removeItem('sf-servitor-draft');
+        // resume whatever action hit the paywall — the user should not have
+        // to remember to click the button again
+        var resume = pendingAction;
+        pendingAction = null;
+        if (resume) setTimeout(resume, 350);
       })
       .catch(function (e) { err.textContent = e.message; });
+  });
+
+  // returning via the browser Back button restores the page from bfcache with
+  // the buy button still stuck on "Summoning checkout…" — reset it
+  window.addEventListener('pageshow', function () {
+    var btn = document.getElementById('grim-buy');
+    btn.disabled = false;
+    btn.textContent = 'Unlock — $4.99 →';
   });
 })();
 

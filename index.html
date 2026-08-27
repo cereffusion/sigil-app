@@ -1207,6 +1207,16 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     overlay.classList.add('open');
     err.textContent = 'Payment received ✦ — your code is on its way to your inbox. Enter it above when it arrives.';
   }
+
+  // pages restored from bfcache (Back from Stripe) keep the stuck button state
+  window.addEventListener('pageshow', function () {
+    var gb = document.getElementById('grim-buy');
+    gb.disabled = false;
+    gb.textContent = 'Unlock — $4.99 →';
+    var mp = document.getElementById('mm-pay');
+    mp.disabled = false;
+    mp.textContent = 'Continue to Payment →';
+  });
 })();
 </script>
 

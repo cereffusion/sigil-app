@@ -1,9 +1,10 @@
-const CACHE = 'sigil-forge-v1'
+const CACHE = 'sigil-forge-v2'
 const ASSETS = [
   '/',
   '/index.html',
   '/invoke.html',
   '/manifest.html',
+  '/servitor.html',
   '/app.webmanifest',
   '/icon-192.png',
   '/icon-512.png',

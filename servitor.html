@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Servitor</title>
+<meta name="description" content="Build a servitor: charter its single task, generate its form and seal, and follow the birth, feeding, and retirement rituals.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sigil Forge">
+<meta property="og:title" content="The Servitor — build a thought-form with one job">
+<meta property="og:description" content="Charter, form, seal, and rituals — a guided servitor builder.">
+<meta name="theme-color" content="#0b0a10">
+<link rel="manifest" href="app.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>
+  (function () {
+    var t = localStorage.getItem('sf-theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<style>
+  :root {
+    --bg: #0b0a10;
+    --bg2: #181425;
+    --panel: #15131e;
+    --ink: #e8e2d0;
+    --gold: #c9a84c;
+    --dim: #6f6a7e;
+    --line: #2c2840;
+    --line2: #3a3550;
+    --font: Georgia, 'Times New Roman', serif;
+  }
+  :root[data-theme="moon"] {
+    --bg: #0a0e1a; --bg2: #121a30; --panel: #111726; --ink: #c8d0dc;
+    --gold: #8a7fb8; --dim: #5c667a; --line: #232c42; --line2: #32405e;
+    --font: 'Palatino Linotype', Georgia, serif;
+  }
+  :root[data-theme="neon"] {
+    --bg: #0d0a12; --bg2: #1a1024; --panel: #16101e; --ink: #f4eaff;
+    --gold: #ff2d95; --dim: #7a6a8a; --line: #2e2040; --line2: #46305e;
+    --font: 'Courier New', Courier, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(ellipse at 50% 30%, var(--bg2) 0%, var(--bg) 70%);
+    color: var(--ink);
+    font-family: var(--font);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 4rem;
+  }
+  .nav { margin-bottom: 1.4rem; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; text-align: center; }
+  .nav a { color: var(--dim); text-decoration: none; }
+  .nav a.here { color: var(--gold); }
+  .nav a:hover { color: var(--ink); }
+  h1 {
+    font-weight: normal; letter-spacing: 0.35em; text-transform: uppercase;
+    font-size: 1.4rem; color: var(--gold); margin-bottom: 0.3rem; text-align: center;
+  }
+  .subtitle { color: var(--dim); font-size: 0.85rem; font-style: italic; margin-bottom: 1.6rem; text-align: center; }
+  .wrap { width: 100%; max-width: 720px; }
+  section.step {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.4rem 1.5rem;
+    margin-bottom: 1.2rem;
+  }
+  .step-head {
+    display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 0.9rem;
+    border-bottom: 1px dashed var(--line2); padding-bottom: 0.7rem;
+  }
+  .step-num {
+    font-size: 0.7rem; letter-spacing: 0.2em; color: var(--gold);
+    text-transform: uppercase; flex-shrink: 0;
+  }
+  .step-title { font-size: 1.02rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); }
+  .step-sub { color: var(--dim); font-size: 0.78rem; font-style: italic; margin-left: auto; }
+  label { display: block; color: var(--gold); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; margin: 0.9rem 0 0.3rem; }
+  label .opt { color: var(--dim); text-transform: none; letter-spacing: 0.04em; }
+  input[type="text"], input[type="number"], textarea, select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 4px;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--gold); }
+  textarea { resize: vertical; min-height: 2.6em; }
+  .row2 { display: flex; gap: 0.8rem; }
+  .row2 > div { flex: 1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.3rem; }
+  .chip {
+    background: transparent; border: 1px solid var(--line2); color: var(--dim);
+    font-family: inherit; font-size: 0.78rem; letter-spacing: 0.06em;
+    padding: 0.4rem 0.85rem; border-radius: 999px; cursor: pointer;
+  }
+  .chip:hover { border-color: var(--gold); color: var(--ink); }
+  .chip.on { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+  .hint { color: var(--dim); font-size: 0.74rem; font-style: italic; margin-top: 0.4rem; line-height: 1.5; }
+  button.act {
+    background: transparent; border: 1px solid var(--gold); color: var(--gold);
+    font-family: inherit; font-size: 0.82rem; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 0.6rem 1.1rem; border-radius: 4px; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  button.act:hover { background: var(--gold); color: var(--bg); }
+  button.act.secondary { border-color: var(--line2); color: var(--dim); }
+  button.act.secondary:hover { background: var(--line2); color: var(--ink); }
+  .btnrow { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+  .palette { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.4rem; }
+  .swatch {
+    width: 24px; height: 24px; padding: 0; border-radius: 50%;
+    border: 2px solid var(--line2); cursor: pointer;
+  }
+  .swatch.active { border-color: var(--ink); transform: scale(1.12); }
+  .duo { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1.1rem; align-items: flex-start; }
+  .glyphbox {
+    background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px;
+  }
+  .glyphbox svg { display: block; width: 280px; height: 280px; max-width: 76vw; }
+  .glyphbox .cap { text-align: center; color: var(--dim); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; margin-top: 6px; }
+  .readout { flex: 1 1 220px; min-width: 220px; }
+  .readout .rname { font-size: 1.5rem; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.6rem; }
+  .readout .rdesc { font-size: 1rem; line-height: 1.55; }
+  .readout .rmeta { color: var(--dim); font-size: 0.8rem; margin-top: 0.9rem; line-height: 1.7; }
+  .gallery {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px; margin-top: 1rem;
+  }
+  .tile { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px; text-align: center; cursor: pointer; }
+  .tile:hover { border-color: var(--gold); }
+  .tile svg { display: block; width: 100%; height: auto; border-radius: 4px; }
+  .tile .lbl { color: var(--dim); font-size: 0.68rem; letter-spacing: 0.08em; margin-top: 4px; }
+  .hidden { display: none; }
+  .ritual { margin-top: 0.9rem; }
+  .ritual h3 { font-size: 0.85rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .ritual ol { margin: 0 0 0.4rem 1.2rem; }
+  .ritual li { font-size: 0.88rem; line-height: 1.65; margin-bottom: 0.3rem; }
+  .ritual .say { color: var(--gold); font-style: italic; }
+  .rules { border-left: 3px solid var(--gold); padding: 0.4rem 0 0.4rem 1rem; margin-top: 0.9rem; }
+  .rules div { font-size: 0.85rem; line-height: 1.7; color: var(--ink); }
+  .rules b { color: var(--gold); font-weight: normal; }
+  .roster { width: 100%; max-width: 720px; margin-bottom: 1.2rem; }
+  .roster-title { font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); margin-bottom: 0.5rem; }
+  .roster-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .roster-chip {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+    padding: 0.35rem 0.8rem; font-size: 0.8rem; cursor: pointer;
+  }
+  .roster-chip:hover { border-color: var(--gold); }
+  .roster-chip .x { color: var(--dim); cursor: pointer; padding: 0 0.1rem; }
+  .roster-chip .x:hover { color: #c0392b; }
+  .mm-error { color: #c0392b; font-size: 0.8rem; margin-top: 0.6rem; min-height: 1em; }
+  .toast {
+    position: fixed; top: 1.2rem; left: 50%; transform: translateX(-50%);
+    background: var(--panel); border: 1px solid var(--gold); color: var(--gold);
+    padding: 0.7rem 1.3rem; border-radius: 6px; font-size: 0.85rem;
+    letter-spacing: 0.08em; z-index: 60; display: none; text-align: center;
+  }
+  .grim-overlay {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(5, 4, 9, 0.82);
+    display: none; align-items: center; justify-content: center; padding: 1rem;
+  }
+  .grim-overlay.open { display: flex; }
+  .grim-modal {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 1.6rem 1.5rem; width: 100%; max-width: 420px; max-height: 92vh; overflow-y: auto;
+  }
+  .grim-modal h2 { font-weight: normal; letter-spacing: 0.25em; text-transform: uppercase; font-size: 1rem; color: var(--gold); margin-bottom: 0.35rem; }
+  .grim-modal .sub { color: var(--dim); font-size: 0.8rem; font-style: italic; margin-bottom: 1rem; }
+  .theme-pick { position: fixed; top: 14px; right: 16px; display: flex; gap: 8px; z-index: 80; }
+  .theme-pick button { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; padding: 0; border: 2px solid var(--line2); }
+  .theme-pick button.on { border-color: var(--ink); transform: scale(1.15); }
+  .tip-jar { margin-top: 2.4rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); text-align: center; }
+  .tip-jar-label { color: var(--dim); font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .tip-jar a { display: inline-block; padding: 0.6rem 1.2rem; background: var(--gold); color: var(--bg); text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem; letter-spacing: 0.15em; }
+  @media print {
+    body > *:not(#print-sheet) { display: none !important; }
+    body { background: #fff; color: #000; padding: 0; }
+    #print-sheet { display: block !important; color: #000; font-family: Georgia, serif; padding: 2rem; }
+    #print-sheet h2 { letter-spacing: 0.2em; text-transform: uppercase; font-size: 1.1rem; margin-bottom: 1rem; }
+    #print-sheet .prow { margin-bottom: 0.55rem; font-size: 0.95rem; }
+    #print-sheet .plabel { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: #666; }
+    #print-sheet svg { width: 200px; height: 200px; }
+    #print-sheet .pglyphs { display: flex; gap: 2rem; margin: 1.2rem 0; }
+  }
+  #print-sheet { display: none; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a href="index.html">Sigil Forge</a> &nbsp;·&nbsp;
+  <a href="invoke.html">Invocation Guide</a> &nbsp;·&nbsp;
+  <a href="manifest.html">The Working</a> &nbsp;·&nbsp;
+  <a href="servitor.html" class="here">The Servitor</a>
+</div>
+
+<h1>The Servitor</h1>
+<div class="subtitle">a thought-form with one job — chartered, given form, sealed, and fed</div>
+
+<div class="roster hidden" id="roster">
+  <div class="roster-title">✦ Your servitors</div>
+  <div class="roster-list" id="roster-list"></div>
+</div>
+
+<div class="wrap">
+
+<section class="step">
+  <div class="step-head">
+    <span class="step-num">I</span>
+    <span class="step-title">The Charter</span>
+    <span class="step-sub">every field filled, or it will be unpredictable</span>
+  </div>
+
+  <div class="row2">
+    <div>
+      <label for="sv-name">Name</label>
+      <input type="text" id="sv-name" placeholder="invented, distinct, easy to say aloud" autocomplete="off">
+    </div>
+    <div>
+      <label for="sv-job">Its one job</label>
+      <input type="text" id="sv-job" placeholder="narrow, present-tense, one task only" autocomplete="off">
+    </div>
+  </div>
+
+  <label>Domain <span class="opt">(read from the job — override if it read wrong)</span></label>
+  <div class="chips" id="sv-domain">
+    <button class="chip" data-v="seek">seek</button>
+    <button class="chip" data-v="gather">gather</button>
+    <button class="chip" data-v="guard">guard</button>
+    <button class="chip" data-v="release">release</button>
+  </div>
+
+  <label for="sv-limits">Limits <span class="opt">(what it may not do)</span></label>
+  <textarea id="sv-limits" rows="3">only uses energy I give it
+does not act on any specific named person
+</textarea>
+
+  <div class="row2">
+    <div>
+      <label for="sv-feed">Feed method</label>
+      <select id="sv-feed">
+        <option value="attention">attention (gaze on the seal)</option>
+        <option value="spoken">spoken line</option>
+        <option value="breath">breath</option>
+        <option value="offering">a small offering</option>
+        <option value="charged moment">a charged moment</option>
+      </select>
+    </div>
+    <div>
+      <label for="sv-line">Spoken line <span class="opt">(same words every feed)</span></label>
+      <input type="text" id="sv-line" placeholder="auto-written from name + job if left blank" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="row2">
+    <div>
+      <label for="sv-daily">Daily feeds for how many days</label>
+      <input type="number" id="sv-daily" value="14" min="3" max="60">
+    </div>
+    <div>
+      <label for="sv-weekly">Then feeds per week</label>
+      <input type="number" id="sv-weekly" value="2" min="1" max="7">
+    </div>
+  </div>
+
+  <div class="row2">
+    <div>
+      <label for="sv-end">Lifespan / end condition</label>
+      <input type="text" id="sv-end" placeholder='a date, or "until X happens"' autocomplete="off">
+    </div>
+    <div>
+      <label for="sv-sign">The sign it landed</label>
+      <input type="text" id="sv-sign" placeholder="the concrete event that means: retire it" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="rules">
+    <div><b>1.</b> One narrow job — several small servitors beat one godlike one.</div>
+    <div><b>2.</b> Always an off-switch — a lifespan or end condition is mandatory.</div>
+    <div><b>3.</b> Consistent then taper — feed often early, then occasional top-ups.</div>
+    <div><b>4.</b> Feed, then let go — obsessing over the result starves it.</div>
+  </div>
+</section>
+
+<section class="step">
+  <div class="step-head">
+    <span class="step-num">II</span>
+    <span class="step-title">Its Form</span>
+    <span class="step-sub">what you will picture when you feed it</span>
+  </div>
+
+  <label>Color</label>
+  <div class="palette" id="sv-palette">
+    <button class="swatch active" data-ink="#e8e2d0" data-accent="#c9a84c" style="background:#e8e2d0" title="Bone &amp; Gold"></button>
+    <button class="swatch" data-ink="#c9a84c" data-accent="#8a6d2f" style="background:#c9a84c" title="Gold"></button>
+    <button class="swatch" data-ink="#c0392b" data-accent="#7a241b" style="background:#c0392b" title="Crimson"></button>
+    <button class="swatch" data-ink="#9b59d0" data-accent="#5e3580" style="background:#9b59d0" title="Violet"></button>
+    <button class="swatch" data-ink="#3ec6b8" data-accent="#1f7a71" style="background:#3ec6b8" title="Teal"></button>
+    <button class="swatch" data-ink="glitter" data-accent="#e8b6ff" style="background:linear-gradient(135deg,#ffd1ec,#e8b6ff 30%,#b5e8ff 60%,#ffe9b5)" title="Glitter"></button>
+    <button class="swatch" data-ink="#ff2d95" data-accent="#b01060" style="background:#ff2d95" title="Hot Pink"></button>
+  </div>
+
+  <div class="btnrow">
+    <button class="act" id="sv-generate">Give it form</button>
+    <button class="act secondary" id="sv-reroll">Reroll</button>
+    <button class="act secondary" id="sv-showall">Show all forms</button>
+  </div>
+
+  <div class="gallery hidden" id="sv-gallery"></div>
+
+  <div class="duo hidden" id="sv-output">
+    <div class="glyphbox">
+      <svg id="sv-form-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="cap">the form</div>
+    </div>
+    <div class="readout">
+      <div class="rname" id="sv-out-name"></div>
+      <div class="rdesc" id="sv-out-desc"></div>
+      <div class="rmeta" id="sv-out-meta"></div>
+    </div>
+  </div>
+  <p class="hint">The form is drawn from the name and job — the same charter always births the same creature. Reroll shifts its aspect; clicking a tile in "show all" chooses that archetype directly.</p>
+</section>
+
+<section class="step">
+  <div class="step-head">
+    <span class="step-num">III</span>
+    <span class="step-title">Its Seal</span>
+    <span class="step-sub">the glyph you focus on when feeding</span>
+  </div>
+  <label>Forge the seal from</label>
+  <div class="chips" id="sv-sealsrc">
+    <button class="chip on" data-v="name">the name</button>
+    <button class="chip" data-v="job">the job</button>
+  </div>
+  <div class="duo">
+    <div class="glyphbox">
+      <svg id="sv-seal-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="cap">the seal</div>
+    </div>
+    <div class="readout">
+      <div class="rmeta" id="sv-seal-letters" style="margin-top:0"></div>
+      <p class="hint" style="margin-top:0.8rem">Drawn on the rose wheel, as in the Forge. For an ornate version with effect inks, open it in the <a id="sv-forge-link" href="index.html" style="color:var(--gold)">Sigil Forge</a> and it will arrive pre-loaded.</p>
+    </div>
+  </div>
+</section>
+
+<section class="step">
+  <div class="step-head">
+    <span class="step-num">IV</span>
+    <span class="step-title">The Rituals</span>
+    <span class="step-sub">read with your charter woven in</span>
+  </div>
+  <div class="ritual" id="ritual-birth">
+    <h3>Birth — once, when the charter is complete</h3>
+    <ol>
+      <li>Sit with the seal before you. Remove distractions.</li>
+      <li>Reach a peak state — deep relaxation, breathwork, or the far side of exertion.</li>
+      <li>Stare at the seal. Picture the form vividly, doing its one job.</li>
+      <li>Say aloud: its name, its job, its limits.</li>
+      <li>Feel the shift from "I am imagining this" to "it exists, apart from me."</li>
+      <li>Close: <span class="say" id="rb-close">"You are —. Your work is —. Go and do it."</span></li>
+    </ol>
+  </div>
+  <div class="ritual" id="ritual-feed">
+    <h3>Feeding — on the cadence you set</h3>
+    <ol>
+      <li>Glance at the seal (or picture the form) for 30–60 seconds.</li>
+      <li>Picture it actively working.</li>
+      <li>Say the line once: <span class="say" id="rf-line">"—"</span></li>
+      <li>Hand it your feed: <span id="rf-method">attention</span>.</li>
+      <li>Let go. Stop thinking about it until the next feed.</li>
+    </ol>
+  </div>
+  <div class="ritual" id="ritual-retire">
+    <h3>Retirement — when the sign lands or the lifespan ends. Do not skip it.</h3>
+    <ol>
+      <li>Bring out the seal.</li>
+      <li>Say: <span class="say" id="rr-thank">"—, your work is done. Thank you."</span></li>
+      <li>Declare the job complete and the bond released.</li>
+      <li>Destroy the seal — burn it, or delete it here.</li>
+      <li>Picture the form unwinding, dissolving back into you.</li>
+      <li>Close: <span class="say">"You are released. It is finished."</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="step">
+  <div class="step-head">
+    <span class="step-num">V</span>
+    <span class="step-title">Keep It</span>
+    <span class="step-sub">bind the charter, carry the schedule</span>
+  </div>
+  <div class="btnrow">
+    <button class="act" id="sv-bind">✦ Bind &amp; Save</button>
+    <button class="act secondary" id="sv-ics">Feeding schedule → calendar (.ics)</button>
+    <button class="act secondary" id="sv-save-form">Save form SVG</button>
+    <button class="act secondary" id="sv-save-seal">Save seal SVG</button>
+    <button class="act secondary" id="sv-print">Print charter</button>
+  </div>
+  <div class="mm-error" id="sv-error"></div>
+  <p class="hint">Bound servitors live in this browser's roster above. The calendar file carries the daily feeds, then the weekly cadence — set to 9pm, edit freely once imported.</p>
+</section>
+
+</div>
+
+<div class="tip-jar">
+  <div class="tip-jar-label">✦ Support This Craft ✦</div>
+  <a href="https://buy.stripe.com/eVq4gz81w9D86LtfTx8so00" target="_blank">Leave a Tip</a>
+</div>
+
+<div class="theme-pick" id="theme-pick">
+  <button data-t="" style="background:#c9a84c" title="Midnight"></button>
+  <button data-t="moon" style="background:#c8d0dc" title="Moon Phase"></button>
+  <button data-t="neon" style="background:#ff2d95" title="Ritual Neon"></button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="grim-overlay" id="grim-overlay">
+  <div class="grim-modal">
+    <h2>The Grimoire</h2>
+    <div class="sub">Binding servitors, schedules, and exports are part of the Grimoire — $4.99, once, forever. Effect inks and your sigil library ride along.</div>
+    <label for="grim-email">Your email (your unlock code is sent here)</label>
+    <input type="email" id="grim-email" placeholder="you@example.com" autocomplete="email">
+    <div class="btnrow">
+      <button class="act" id="grim-buy">Unlock — $4.99 →</button>
+      <button class="act secondary" id="grim-cancel">Not now</button>
+    </div>
+    <div style="border-top:1px dashed var(--line);margin:1.1rem 0 0.4rem;"></div>
+    <label for="grim-code">Already have a code?</label>
+    <input type="text" id="grim-code" placeholder="GRIM-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase">
+    <div class="mm-error" id="grim-error"></div>
+    <div class="btnrow">
+      <button class="act secondary" id="grim-redeem">Redeem Code</button>
+    </div>
+  </div>
+</div>
+
+<div id="print-sheet"></div>
+
+<script>
+(function () {
+  'use strict';
+  var SVGNS = 'http://www.w3.org/2000/svg';
+
+  // ---- seeded RNG ----
+  function hashString(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    return h >>> 0;
+  }
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  var rng = Math.random;
+  function pick(arr) { return arr[Math.floor(rng() * arr.length)]; }
+  function range(lo, hi) { return lo + rng() * (hi - lo); }
+  function rint(lo, hi) { return Math.floor(range(lo, hi + 1)); }
+
+  // ---- job -> domain ----
+  var KEYWORDS = {
+    seek:    ['meet', 'find', 'love', 'partner', 'attract', 'opportun', 'connect', 'date', 'friend', 'notice', 'right person'],
+    gather:  ['money', 'wealth', 'abund', 'work', 'job', 'career', 'sell', 'client', 'success', 'win', 'draw'],
+    guard:   ['protect', 'calm', 'focus', 'steady', 'ground', 'shield', 'safe', 'peace', 'sleep', 'anxiet', 'still'],
+    release: ['release', 'let go', 'heal', 'grief', 'banish', 'forgive', 'quit', 'stop', 'end', 'cleanse', 'free']
+  };
+  function categoryOf(job) {
+    var j = (job || '').toLowerCase();
+    for (var cat in KEYWORDS) {
+      for (var i = 0; i < KEYWORDS[cat].length; i++) {
+        if (j.indexOf(KEYWORDS[cat][i]) !== -1) return cat;
+      }
+    }
+    return 'default';
+  }
+
+  var CATEGORY = {
+    seek:    { arch: ['bird', 'thread', 'orb', 'spiral', 'eye', 'fox', 'moth', 'rose', 'key'],            verbs: ['scouts ahead and returns', 'follows the scent of what you named', 'drifts steadily toward its target'] },
+    gather:  { arch: ['bird', 'knot', 'orb', 'web', 'tree', 'fox', 'spider', 'stag', 'key', 'bee'],       verbs: ['gathers what is owed and brings it back', 'draws opportunity inward', 'returns heavy with it'] },
+    guard:   { arch: ['star', 'orb', 'flame', 'eye', 'tree', 'serpent', 'stag', 'spider', 'owl', 'cat'],  verbs: ['stands watch, unmoving', 'holds a steady light', 'keeps the boundary you set'] },
+    release: { arch: ['flame', 'thread', 'orb', 'spiral', 'crescent', 'serpent', 'moth', 'wave'],         verbs: ['carries the weight away and dissolves', 'burns it down to nothing', 'lets it drift out of you'] },
+    default: { arch: ['orb', 'star', 'knot', 'crescent', 'web', 'stag', 'rose', 'cat', 'bee', 'wave', 'owl'], verbs: ['does its quiet work and waits', 'tends to the task without rest'] }
+  };
+  var MATERIALS = ['gold', 'silver', 'smoke', 'ember', 'violet', 'pearl', 'iron', 'moonlit', 'copper', 'ink-black', 'emerald'];
+  var ARCH_NOUN = {
+    orb: 'orb', flame: 'flame', knot: 'knotted coil', star: 'many-pointed star',
+    bird: 'bird', thread: 'reaching thread', spiral: 'turning spiral',
+    eye: 'open eye', tree: 'rooted tree', web: 'woven web', crescent: 'crescent',
+    fox: 'fox', serpent: 'coiled serpent', stag: 'antlered stag', moth: 'pale moth', spider: 'patient spider',
+    rose: 'blooming rose', key: 'turning key', owl: 'watchful owl', wave: 'rolling wave',
+    bee: 'golden bee', cat: 'watching cat'
+  };
+
+  var palette = { ink: '#e8e2d0', accent: '#c9a84c' };
+  var nonce = 0;
+  var chosenArch = null;   // set when a gallery tile is clicked
+  var domainOverride = null;
+  var current = null;      // last generated {name, job, cat, archetype, material, behavior, seed}
+
+  function el(name, attrs) {
+    var e = document.createElementNS(SVGNS, name);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function strokeColor(svg, uid) {
+    if (palette.ink !== 'glitter') return palette.ink;
+    var id = 'grad-' + (uid || 'main');
+    var defs = el('defs', {});
+    var grad = el('linearGradient', { id: id, x1: '0', y1: '0', x2: '1', y2: '1' });
+    [['0%', '#ffd1ec'], ['30%', '#e8b6ff'], ['60%', '#b5e8ff'], ['100%', '#ffe9b5']].forEach(function (s) {
+      grad.appendChild(el('stop', { offset: s[0], 'stop-color': s[1] }));
+    });
+    defs.appendChild(grad);
+    svg.appendChild(defs);
+    return 'url(#' + id + ')';
+  }
+
+  var CX = 200, CY = 200;
+  function line(svg, x1, y1, x2, y2, stroke, w) {
+    svg.appendChild(el('line', { x1: x1, y1: y1, x2: x2, y2: y2, stroke: stroke, 'stroke-width': w, 'stroke-linecap': 'round' }));
+  }
+
+  function drawOrb(svg, stroke) {
+    var rings = rint(2, 4);
+    for (var i = 0; i < rings; i++) {
+      var r = 60 + i * (90 / rings) + range(-6, 6);
+      svg.appendChild(el('circle', { cx: CX, cy: CY, r: r, fill: 'none', stroke: stroke, 'stroke-width': range(2, 4) }));
+    }
+    var dots = rint(8, 18);
+    for (var d = 0; d < dots; d++) {
+      var a = range(0, Math.PI * 2), rr = range(20, 150);
+      svg.appendChild(el('circle', { cx: CX + Math.cos(a) * rr, cy: CY + Math.sin(a) * rr, r: range(1.5, 3.5), fill: palette.accent }));
+    }
+  }
+  function drawStar(svg, stroke) {
+    var points = rint(5, 9), outer = 150, inner = outer * range(0.4, 0.6);
+    var d = '';
+    for (var i = 0; i < points * 2; i++) {
+      var r = (i % 2 === 0) ? outer : inner;
+      r += range(-8, 8);
+      var a = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+      d += (i === 0 ? 'M' : 'L') + (CX + Math.cos(a) * r).toFixed(1) + ' ' + (CY + Math.sin(a) * r).toFixed(1) + ' ';
+    }
+    d += 'Z';
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': range(2.5, 4), 'stroke-linejoin': 'round' }));
+  }
+  function drawKnot(svg, stroke) {
+    var k = pick([2, 3, 4]), phase = range(0, Math.PI), amp = range(40, 70), base = range(70, 100);
+    var d = '', steps = 200;
+    for (var i = 0; i <= steps; i++) {
+      var t = (i / steps) * Math.PI * 2;
+      var r = base + amp * Math.sin(k * t + phase);
+      d += (i === 0 ? 'M' : 'L') + (CX + Math.cos(t) * r).toFixed(1) + ' ' + (CY + Math.sin(t) * r).toFixed(1) + ' ';
+    }
+    d += 'Z';
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': range(2, 3.5) }));
+  }
+  function drawFlame(svg, stroke) {
+    var flames = rint(1, 2);
+    for (var f = 0; f < flames; f++) {
+      var w = range(50, 80) - f * 18, h = range(150, 200) - f * 40;
+      var top = CY - h / 2, bot = CY + h / 2, sway = range(-25, 25);
+      var d = 'M' + CX + ' ' + bot +
+        ' C' + (CX - w) + ' ' + (bot - h * 0.4) + ' ' + (CX - w * 0.4) + ' ' + (top + h * 0.3) + ' ' + (CX + sway) + ' ' + top +
+        ' C' + (CX + w * 0.4) + ' ' + (top + h * 0.3) + ' ' + (CX + w) + ' ' + (bot - h * 0.4) + ' ' + CX + ' ' + bot + ' Z';
+      svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': range(2.5, 4) }));
+    }
+  }
+  function drawBird(svg, stroke) {
+    var birds = rint(1, 3);
+    for (var b = 0; b < birds; b++) {
+      var span = range(70, 130) - b * 18;
+      var bx = CX + range(-50, 50), by = CY - 60 + b * 55 + range(-10, 10);
+      var dip = range(15, 35);
+      var d = 'M' + (bx - span) + ' ' + by +
+        ' Q' + (bx - span / 2) + ' ' + (by - dip) + ' ' + bx + ' ' + by +
+        ' Q' + (bx + span / 2) + ' ' + (by - dip) + ' ' + (bx + span) + ' ' + by;
+      svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': range(2.5, 4), 'stroke-linecap': 'round' }));
+    }
+  }
+  function drawThread(svg, stroke) {
+    var amp = range(35, 70), waves = range(2.5, 4), phase = range(0, Math.PI);
+    var d = '', steps = 160, top = 40, bot = 360;
+    for (var i = 0; i <= steps; i++) {
+      var ty = top + (bot - top) * (i / steps);
+      var tx = CX + Math.sin((i / steps) * Math.PI * waves + phase) * amp * (i / steps);
+      d += (i === 0 ? 'M' : 'L') + tx.toFixed(1) + ' ' + ty.toFixed(1) + ' ';
+    }
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': range(2.5, 4), 'stroke-linecap': 'round' }));
+    var ey = bot, ex = CX + Math.sin(Math.PI * waves + phase) * amp;
+    svg.appendChild(el('circle', { cx: ex, cy: ey, r: range(4, 7), fill: palette.accent }));
+  }
+  function drawSpiral(svg, stroke) {
+    var turns = range(3, 5.5), maxR = 150, steps = 280, jit = range(0, 5);
+    var d = '';
+    for (var i = 0; i <= steps; i++) {
+      var t = (i / steps) * turns * Math.PI * 2;
+      var r = maxR * (i / steps) + (jit ? Math.sin(t * 3) * jit : 0);
+      d += (i === 0 ? 'M' : 'L') + (CX + Math.cos(t) * r).toFixed(1) + ' ' + (CY + Math.sin(t) * r).toFixed(1) + ' ';
+    }
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': range(2, 3.5), 'stroke-linecap': 'round' }));
+    svg.appendChild(el('circle', { cx: CX, cy: CY, r: range(3, 6), fill: palette.accent }));
+  }
+  function drawEye(svg, stroke) {
+    var w = range(150, 185), h = range(70, 100);
+    var lx = CX - w / 2, rx = CX + w / 2;
+    var d = 'M' + lx + ' ' + CY +
+      ' Q' + CX + ' ' + (CY - h) + ' ' + rx + ' ' + CY +
+      ' Q' + CX + ' ' + (CY + h) + ' ' + lx + ' ' + CY + ' Z';
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': range(2.5, 4) }));
+    var iris = range(28, 40);
+    svg.appendChild(el('circle', { cx: CX, cy: CY, r: iris, fill: 'none', stroke: stroke, 'stroke-width': range(2, 3) }));
+    svg.appendChild(el('circle', { cx: CX, cy: CY, r: range(6, 11), fill: palette.accent }));
+    var rays = rint(6, 12);
+    for (var i = 0; i < rays; i++) {
+      var a = (i / rays) * Math.PI * 2;
+      var r0 = iris + 6, r1 = iris + range(10, 22);
+      line(svg, CX + Math.cos(a) * r0, CY + Math.sin(a) * r0, CX + Math.cos(a) * r1, CY + Math.sin(a) * r1, stroke, range(1.5, 2.5));
+    }
+  }
+  function drawTree(svg, stroke) {
+    function branch(x, y, len, ang, depth) {
+      if (depth === 0 || len < 8) return;
+      var x2 = x + Math.cos(ang) * len, y2 = y + Math.sin(ang) * len;
+      line(svg, x, y, x2, y2, stroke, Math.max(1.5, depth * 1.1));
+      var spread = range(0.4, 0.8), shrink = range(0.62, 0.74);
+      branch(x2, y2, len * shrink, ang - spread, depth - 1);
+      branch(x2, y2, len * shrink, ang + spread, depth - 1);
+      if (rng() > 0.6) branch(x2, y2, len * shrink * 0.8, ang + range(-0.2, 0.2), depth - 1);
+    }
+    var depth = rint(4, 6), trunk = range(58, 78);
+    branch(CX, 330, trunk, -Math.PI / 2, depth);
+    branch(CX, 330, trunk * 0.55, Math.PI / 2, depth - 2);
+  }
+  function drawWeb(svg, stroke) {
+    var spokes = rint(6, 11), rings = rint(3, 5), maxR = 150;
+    var ang = [];
+    for (var s = 0; s < spokes; s++) ang.push((s / spokes) * Math.PI * 2 + range(-0.06, 0.06));
+    ang.forEach(function (a) {
+      line(svg, CX, CY, CX + Math.cos(a) * maxR, CY + Math.sin(a) * maxR, stroke, range(1.2, 2));
+    });
+    for (var ri = 1; ri <= rings; ri++) {
+      var r = maxR * (ri / rings) * range(0.92, 1.0);
+      var d = '';
+      for (var i = 0; i <= spokes; i++) {
+        var a2 = ang[i % spokes];
+        d += (i === 0 ? 'M' : 'L') + (CX + Math.cos(a2) * r).toFixed(1) + ' ' + (CY + Math.sin(a2) * r).toFixed(1) + ' ';
+      }
+      svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': range(1.2, 2) }));
+    }
+    svg.appendChild(el('circle', { cx: CX, cy: CY, r: range(3, 5), fill: palette.accent }));
+  }
+  function drawCrescent(svg, stroke) {
+    var R = range(120, 145), offset = range(45, 70), tilt = range(-0.5, 0.5);
+    var ox = Math.cos(tilt) * offset, oy = Math.sin(tilt) * offset;
+    var crescentPath = 'M' + (CX + ox) + ' ' + (CY - R + oy) +
+      ' A' + R + ' ' + R + ' 0 1 1 ' + (CX + ox) + ' ' + (CY + R + oy) +
+      ' A' + (R + offset) + ' ' + (R + offset) + ' 0 0 0 ' + (CX + ox) + ' ' + (CY - R + oy) + ' Z';
+    svg.appendChild(el('path', { d: crescentPath, fill: 'none', stroke: stroke, 'stroke-width': range(2.5, 4) }));
+    var stars = rint(3, 6);
+    for (var i = 0; i < stars; i++) {
+      svg.appendChild(el('circle', { cx: CX + range(40, 150), cy: CY + range(-150, 150), r: range(1.5, 3), fill: palette.accent }));
+    }
+  }
+  function drawFox(svg, stroke) {
+    var w = range(2.5, 3.5), j = range(-6, 6);
+    var earY = range(70, 95), chin = range(290, 320), cheek = range(70, 90);
+    var d = 'M' + (CX - cheek) + ' ' + (earY + 50) + ' L' + (CX - cheek + 12) + ' ' + earY + ' L' + (CX - 22) + ' ' + (earY + 40);
+    d += ' M' + (CX + cheek) + ' ' + (earY + 50) + ' L' + (CX + cheek - 12) + ' ' + earY + ' L' + (CX + 22) + ' ' + (earY + 40);
+    d += ' M' + (CX - cheek) + ' ' + (earY + 50) + ' L' + (CX - cheek + 18) + ' ' + (cheek + 120 + j) + ' L' + CX + ' ' + chin +
+         ' L' + (CX + cheek - 18) + ' ' + (cheek + 120 - j) + ' L' + (CX + cheek) + ' ' + (earY + 50);
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    svg.appendChild(el('circle', { cx: CX - 32, cy: cheek + 110, r: range(3, 5), fill: palette.accent }));
+    svg.appendChild(el('circle', { cx: CX + 32, cy: cheek + 110, r: range(3, 5), fill: palette.accent }));
+    svg.appendChild(el('circle', { cx: CX, cy: chin - 14, r: range(3.5, 5.5), fill: palette.accent }));
+  }
+  function drawSerpent(svg, stroke) {
+    var turns = range(2.2, 3.2), base = range(120, 145), steps = 240, phase = range(0, Math.PI);
+    var d = '', hx = 0, hy = 0, px = 0, py = 0;
+    for (var i = 0; i <= steps; i++) {
+      var t = (i / steps) * turns * Math.PI * 2 + phase;
+      var r = base * (1 - 0.72 * (i / steps));
+      var x = CX + Math.cos(t) * r, y = CY + Math.sin(t) * r;
+      if (i === 0) { hx = x; hy = y; }
+      if (i === 1) { px = x; py = y; }
+      d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1) + ' ';
+    }
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': range(3, 4.5), 'stroke-linecap': 'round' }));
+    var ang = Math.atan2(hy - py, hx - px);
+    svg.appendChild(el('circle', { cx: hx, cy: hy, r: range(7, 10), fill: palette.ink === 'glitter' ? palette.accent : palette.ink }));
+    var tl = range(16, 24);
+    line(svg, hx, hy, hx + Math.cos(ang - 0.18) * tl, hy + Math.sin(ang - 0.18) * tl, palette.accent, 2);
+    line(svg, hx, hy, hx + Math.cos(ang + 0.18) * tl, hy + Math.sin(ang + 0.18) * tl, palette.accent, 2);
+  }
+  function drawStag(svg, stroke) {
+    var w = range(2.5, 3.5), topY = range(165, 185), muzzle = range(305, 330);
+    var hw = range(34, 46);
+    var d = 'M' + (CX - hw) + ' ' + topY + ' L' + (CX - hw * 0.45) + ' ' + (muzzle - 30) +
+            ' L' + CX + ' ' + muzzle + ' L' + (CX + hw * 0.45) + ' ' + (muzzle - 30) +
+            ' L' + (CX + hw) + ' ' + topY;
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    function branch(x, y, len, ang, depth) {
+      if (depth === 0 || len < 7) return;
+      var x2 = x + Math.cos(ang) * len, y2 = y + Math.sin(ang) * len;
+      line(svg, x, y, x2, y2, stroke, Math.max(1.5, depth));
+      branch(x2, y2, len * range(0.6, 0.72), ang - range(0.5, 0.8), depth - 1);
+      if (rng() > 0.4) branch(x2, y2, len * range(0.5, 0.65), ang + range(0.2, 0.5), depth - 1);
+    }
+    var depth = rint(3, 5), alen = range(40, 55);
+    branch(CX - hw + 6, topY, alen, -Math.PI / 2 - 0.5, depth);
+    branch(CX + hw - 6, topY, alen, -Math.PI / 2 + 0.5, depth);
+    svg.appendChild(el('circle', { cx: CX - 16, cy: topY + 55, r: range(3, 4.5), fill: palette.accent }));
+    svg.appendChild(el('circle', { cx: CX + 16, cy: topY + 55, r: range(3, 4.5), fill: palette.accent }));
+  }
+  function drawMoth(svg, stroke) {
+    var w = range(2.2, 3.2);
+    var uw = range(95, 125), uh = range(70, 95), lw = range(60, 80), lh = range(55, 75);
+    var bodyTop = CY - 70, bodyBot = CY + 80;
+    [-1, 1].forEach(function (s) {
+      svg.appendChild(el('path', { d: 'M' + CX + ' ' + (CY - 40) +
+        ' Q' + (CX + s * uw) + ' ' + (CY - 40 - uh) + ' ' + (CX + s * uw * 0.6) + ' ' + (CY + 5) +
+        ' Q' + (CX + s * uw * 0.3) + ' ' + (CY - 10) + ' ' + CX + ' ' + (CY - 40) + ' Z',
+        fill: 'none', stroke: stroke, 'stroke-width': w }));
+      svg.appendChild(el('path', { d: 'M' + CX + ' ' + (CY + 5) +
+        ' Q' + (CX + s * lw) + ' ' + (CY + 5 + lh) + ' ' + (CX + s * lw * 0.4) + ' ' + (CY + 60) +
+        ' Q' + (CX + s * lw * 0.2) + ' ' + (CY + 40) + ' ' + CX + ' ' + (CY + 5) + ' Z',
+        fill: 'none', stroke: stroke, 'stroke-width': w }));
+      svg.appendChild(el('circle', { cx: CX + s * uw * 0.4, cy: CY - 35, r: range(4, 7), fill: palette.accent }));
+      svg.appendChild(el('path', { d: 'M' + CX + ' ' + bodyTop + ' Q' + (CX + s * 30) + ' ' + (bodyTop - 35) + ' ' + (CX + s * 45) + ' ' + (bodyTop - 28),
+        fill: 'none', stroke: stroke, 'stroke-width': 1.6, 'stroke-linecap': 'round' }));
+    });
+    line(svg, CX, bodyTop, CX, bodyBot, stroke, range(3.5, 5));
+  }
+  function drawSpider(svg, stroke) {
+    var w = range(2, 3);
+    var ceph = CY - 18, abdo = CY + 30;
+    svg.appendChild(el('ellipse', { cx: CX, cy: ceph, rx: range(16, 22), ry: range(18, 26), fill: 'none', stroke: stroke, 'stroke-width': w }));
+    svg.appendChild(el('ellipse', { cx: CX, cy: abdo, rx: range(24, 32), ry: range(30, 42), fill: 'none', stroke: stroke, 'stroke-width': w }));
+    [-1, 1].forEach(function (s) {
+      for (var i = 0; i < 4; i++) {
+        var y = ceph - 6 + i * 14;
+        var midx = CX + s * range(55, 75), midy = y - range(30, 50);
+        var endx = midx + s * range(40, 60), endy = y + range(20, 45);
+        line(svg, CX + s * 14, y, midx, midy, stroke, w);
+        line(svg, midx, midy, endx, endy, stroke, w);
+      }
+    });
+    svg.appendChild(el('circle', { cx: CX - 6, cy: ceph - 6, r: range(2, 3), fill: palette.accent }));
+    svg.appendChild(el('circle', { cx: CX + 6, cy: ceph - 6, r: range(2, 3), fill: palette.accent }));
+  }
+  function drawRose(svg, stroke) {
+    var k = pick([3, 4, 5, 6]), R = range(135, 150), steps = 360;
+    function rhodonea(amp, rot) {
+      var d = '';
+      for (var i = 0; i <= steps; i++) {
+        var th = (i / steps) * Math.PI * 2;
+        var r = amp * Math.cos(k * th);
+        d += (i === 0 ? 'M' : 'L') + (CX + r * Math.cos(th + rot)).toFixed(1) + ' ' + (CY + r * Math.sin(th + rot)).toFixed(1) + ' ';
+      }
+      return d;
+    }
+    svg.appendChild(el('path', { d: rhodonea(R, 0), fill: 'none', stroke: stroke, 'stroke-width': range(2, 3) }));
+    svg.appendChild(el('path', { d: rhodonea(R * 0.62, Math.PI / k), fill: 'none', stroke: stroke, 'stroke-width': range(1.8, 2.6) }));
+    svg.appendChild(el('circle', { cx: CX, cy: CY, r: range(6, 10), fill: palette.accent }));
+  }
+  function drawKey(svg, stroke) {
+    var w = range(4, 6), bowY = CY - 90, bowR = range(34, 44), shaftBot = CY + 125;
+    svg.appendChild(el('circle', { cx: CX, cy: bowY, r: bowR, fill: 'none', stroke: stroke, 'stroke-width': w }));
+    svg.appendChild(el('circle', { cx: CX, cy: bowY, r: bowR * range(0.4, 0.55), fill: 'none', stroke: stroke, 'stroke-width': w * 0.7 }));
+    line(svg, CX, bowY + bowR, CX, shaftBot, stroke, w);
+    var teeth = rint(2, 4);
+    for (var i = 0; i < teeth; i++) {
+      var ty = shaftBot - i * range(16, 22);
+      line(svg, CX, ty, CX + range(18, 30), ty, stroke, w);
+    }
+    svg.appendChild(el('circle', { cx: CX, cy: bowY, r: range(2, 3.5), fill: palette.accent }));
+  }
+  function drawOwl(svg, stroke) {
+    var w = range(2.5, 3.5), hy = CY - 30, hr = range(72, 85);
+    line(svg, CX - hr * 0.5, hy - hr * 0.7, CX - hr * 0.72, hy - hr * 1.05, stroke, w);
+    line(svg, CX - hr * 0.3, hy - hr * 0.85, CX - hr * 0.72, hy - hr * 1.05, stroke, w);
+    line(svg, CX + hr * 0.5, hy - hr * 0.7, CX + hr * 0.72, hy - hr * 1.05, stroke, w);
+    line(svg, CX + hr * 0.3, hy - hr * 0.85, CX + hr * 0.72, hy - hr * 1.05, stroke, w);
+    svg.appendChild(el('circle', { cx: CX, cy: hy, r: hr, fill: 'none', stroke: stroke, 'stroke-width': w }));
+    var er = range(24, 30), ex = range(30, 38);
+    [-1, 1].forEach(function (s) {
+      svg.appendChild(el('circle', { cx: CX + s * ex, cy: hy - 6, r: er, fill: 'none', stroke: stroke, 'stroke-width': w }));
+      svg.appendChild(el('circle', { cx: CX + s * ex, cy: hy - 6, r: range(7, 11), fill: palette.accent }));
+    });
+    svg.appendChild(el('path', { d: 'M' + CX + ' ' + (hy + 6) + ' L' + (CX - 9) + ' ' + (hy + 20) + ' L' + (CX + 9) + ' ' + (hy + 20) + ' Z', fill: 'none', stroke: stroke, 'stroke-width': w, 'stroke-linejoin': 'round' }));
+    svg.appendChild(el('ellipse', { cx: CX, cy: hy + hr + 50, rx: hr * 0.85, ry: range(70, 88), fill: 'none', stroke: stroke, 'stroke-width': w }));
+    for (var i = 0; i < 3; i++) {
+      var fy = hy + hr + 32 + i * 22;
+      svg.appendChild(el('path', { d: 'M' + (CX - 25) + ' ' + fy + ' L' + CX + ' ' + (fy + 10) + ' L' + (CX + 25) + ' ' + fy, fill: 'none', stroke: stroke, 'stroke-width': 1.6 }));
+    }
+  }
+  function drawWave(svg, stroke) {
+    var w = range(2.5, 3.5), layers = rint(2, 3);
+    for (var L = 0; L < layers; L++) {
+      var y = CY - 20 + L * 38, amp = range(16, 28) - L * 3, waves = range(2, 3.2), d = '';
+      for (var i = 0; i <= 160; i++) {
+        var x = 40 + 320 * (i / 160);
+        d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + (y + Math.sin((i / 160) * Math.PI * 2 * waves) * amp).toFixed(1) + ' ';
+      }
+      svg.appendChild(el('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': w, 'stroke-linecap': 'round' }));
+    }
+    var ccx = range(280, 320), ccy = CY - 55, d2 = '', turns = range(1.2, 1.8);
+    for (var i = 0; i <= 120; i++) {
+      var t = (i / 120) * turns * Math.PI * 2, r = 4 + (i / 120) * 30;
+      d2 += (i === 0 ? 'M' : 'L') + (ccx + Math.cos(t) * r).toFixed(1) + ' ' + (ccy + Math.sin(t) * r).toFixed(1) + ' ';
+    }
+    svg.appendChild(el('path', { d: d2, fill: 'none', stroke: stroke, 'stroke-width': w, 'stroke-linecap': 'round' }));
+  }
+  function drawBee(svg, stroke) {
+    var w = range(2.2, 3), headY = CY - 70, abY = CY + 15, abrx = range(34, 42), abry = range(52, 62);
+    [-1, 1].forEach(function (s) {
+      var wing = el('ellipse', { cx: CX + s * 40, cy: CY - 35, rx: range(28, 38), ry: range(16, 22), fill: 'none', stroke: stroke, 'stroke-width': w * 0.8 });
+      wing.setAttribute('transform', 'rotate(' + (s * 25) + ' ' + (CX + s * 40) + ' ' + (CY - 35) + ')');
+      svg.appendChild(wing);
+    });
+    svg.appendChild(el('ellipse', { cx: CX, cy: abY, rx: abrx, ry: abry, fill: 'none', stroke: stroke, 'stroke-width': w }));
+    for (var i = 0; i < 3; i++) {
+      var sy = abY - 22 + i * 22;
+      var half = Math.sqrt(Math.max(0, 1 - Math.pow((sy - abY) / abry, 2))) * abrx;
+      line(svg, CX - half, sy, CX + half, sy, palette.accent, w);
+    }
+    svg.appendChild(el('circle', { cx: CX, cy: headY, r: range(16, 20), fill: 'none', stroke: stroke, 'stroke-width': w }));
+    line(svg, CX - 6, headY - 12, CX - 16, headY - 30, stroke, 1.6);
+    line(svg, CX + 6, headY - 12, CX + 16, headY - 30, stroke, 1.6);
+    svg.appendChild(el('path', { d: 'M' + (CX - 6) + ' ' + (abY + abry) + ' L' + CX + ' ' + (abY + abry + 16) + ' L' + (CX + 6) + ' ' + (abY + abry) + ' Z', fill: 'none', stroke: stroke, 'stroke-width': w }));
+  }
+  function drawCat(svg, stroke) {
+    var w = range(2.5, 3.5), hy = CY - 10, hw = range(70, 82);
+    svg.appendChild(el('path', { d: 'M' + (CX - hw * 0.7) + ' ' + (hy - hw * 0.55) + ' L' + (CX - hw * 0.5) + ' ' + (hy - hw * 1.05) + ' L' + (CX - hw * 0.15) + ' ' + (hy - hw * 0.6) + ' Z', fill: 'none', stroke: stroke, 'stroke-width': w, 'stroke-linejoin': 'round' }));
+    svg.appendChild(el('path', { d: 'M' + (CX + hw * 0.7) + ' ' + (hy - hw * 0.55) + ' L' + (CX + hw * 0.5) + ' ' + (hy - hw * 1.05) + ' L' + (CX + hw * 0.15) + ' ' + (hy - hw * 0.6) + ' Z', fill: 'none', stroke: stroke, 'stroke-width': w, 'stroke-linejoin': 'round' }));
+    svg.appendChild(el('ellipse', { cx: CX, cy: hy, rx: hw, ry: hw * 0.92, fill: 'none', stroke: stroke, 'stroke-width': w }));
+    [-1, 1].forEach(function (s) {
+      var ex = CX + s * 32;
+      svg.appendChild(el('path', { d: 'M' + (ex - 16) + ' ' + hy + ' Q' + ex + ' ' + (hy - 14) + ' ' + (ex + 16) + ' ' + hy + ' Q' + ex + ' ' + (hy + 14) + ' ' + (ex - 16) + ' ' + hy + ' Z', fill: 'none', stroke: stroke, 'stroke-width': w }));
+      svg.appendChild(el('ellipse', { cx: ex, cy: hy, rx: range(2.5, 4), ry: range(7, 10), fill: palette.accent }));
+    });
+    svg.appendChild(el('path', { d: 'M' + (CX - 7) + ' ' + (hy + 24) + ' L' + (CX + 7) + ' ' + (hy + 24) + ' L' + CX + ' ' + (hy + 33) + ' Z', fill: palette.accent }));
+    line(svg, CX, hy + 33, CX, hy + 40, stroke, 1.6);
+    [-1, 1].forEach(function (s) {
+      for (var i = 0; i < 3; i++) line(svg, CX + s * 12, hy + 30, CX + s * (hw + 30), hy + 26 + i * 9, stroke, 1.3);
+    });
+  }
+
+  var DRAW = {
+    orb: drawOrb, star: drawStar, knot: drawKnot, flame: drawFlame, bird: drawBird, thread: drawThread,
+    spiral: drawSpiral, eye: drawEye, tree: drawTree, web: drawWeb, crescent: drawCrescent,
+    fox: drawFox, serpent: drawSerpent, stag: drawStag, moth: drawMoth, spider: drawSpider,
+    rose: drawRose, key: drawKey, owl: drawOwl, wave: drawWave, bee: drawBee, cat: drawCat
+  };
+
+  function renderForm(svg, archetype, seed, uid) {
+    rng = mulberry32(seed);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.appendChild(el('rect', { x: 0, y: 0, width: 400, height: 400, fill: '#15131e' }));
+    var stroke = strokeColor(svg, uid);
+    DRAW[archetype](svg, stroke);
+    if (palette.ink === 'glitter') {
+      for (var s = 0; s < 14; s++) {
+        svg.appendChild(el('circle', { cx: range(30, 370), cy: range(30, 370), r: range(0.8, 2), fill: '#ffffff' }));
+      }
+    }
+  }
+
+  // ---- seal: rose-wheel mini engine (as in the Forge) ----
+  function distill(phrase) {
+    var letters = phrase.toUpperCase().replace(/[^A-Z]/g, '').split('');
+    var vowels = { A: 1, E: 1, I: 1, O: 1, U: 1 };
+    var seen = {}, kept = [];
+    letters.forEach(function (ch) {
+      if (vowels[ch] || seen[ch]) return;
+      seen[ch] = 1; kept.push(ch);
+    });
+    return kept;
+  }
+  function wheelPosition(ch) {
+    var idx = ch.charCodeAt(0) - 65;
+    var ring, posInRing, ringSize, radius;
+    if (idx < 9)       { ring = 0; posInRing = idx;      ringSize = 9; radius = 190; }
+    else if (idx < 18) { ring = 1; posInRing = idx - 9;  ringSize = 9; radius = 130; }
+    else               { ring = 2; posInRing = idx - 18; ringSize = 8; radius = 72;  }
+    var angle = (posInRing / ringSize) * Math.PI * 2 - Math.PI / 2 + ring * 0.35;
+    return { x: 300 + radius * Math.cos(angle), y: 300 + radius * Math.sin(angle) };
+  }
+  function renderSeal() {
+    var svg = document.getElementById('sv-seal-svg');
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var src = sealSource === 'job'
+      ? (document.getElementById('sv-job').value || '')
+      : (document.getElementById('sv-name').value || '');
+    var kept = distill(src);
+    var ink = palette.ink === 'glitter' ? '#e8b6ff' : palette.ink;
+    svg.appendChild(el('rect', { x: 0, y: 0, width: 600, height: 600, fill: '#15131e' }));
+    svg.appendChild(el('circle', { cx: 300, cy: 300, r: 270, fill: 'none', stroke: palette.accent, 'stroke-width': 1.5, opacity: 0.5 }));
+    svg.appendChild(el('circle', { cx: 300, cy: 300, r: 258, fill: 'none', stroke: palette.accent, 'stroke-width': 0.75, opacity: 0.35 }));
+    var lettersEl = document.getElementById('sv-seal-letters');
+    if (kept.length === 0) {
+      lettersEl.textContent = 'name the servitor to raise its seal';
+      return;
+    }
+    lettersEl.textContent = 'distilled: ' + kept.join(' · ');
+    var pts = kept.map(wheelPosition);
+    var d = '';
+    pts.forEach(function (p, i) { d += (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ' '; });
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: ink, 'stroke-width': 2.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    svg.appendChild(el('circle', { cx: pts[0].x, cy: pts[0].y, r: 7, fill: 'none', stroke: ink, 'stroke-width': 2.5 }));
+    if (pts.length > 1) {
+      var a = pts[pts.length - 2], b = pts[pts.length - 1];
+      var dx = b.x - a.x, dy = b.y - a.y;
+      var mag = Math.sqrt(dx * dx + dy * dy) || 1;
+      var px = -dy / mag * 11, py = dx / mag * 11;
+      svg.appendChild(el('line', { x1: b.x - px, y1: b.y - py, x2: b.x + px, y2: b.y + py, stroke: ink, 'stroke-width': 3, 'stroke-linecap': 'round' }));
+    }
+    var forgeLink = document.getElementById('sv-forge-link');
+    forgeLink.href = 'index.html?phrase=' + encodeURIComponent(src);
+  }
+
+  // ---- generate ----
+  function charter() {
+    var name = (document.getElementById('sv-name').value || '').trim();
+    var job = (document.getElementById('sv-job').value || '').trim();
+    return {
+      name: name, job: job,
+      domain: domainOverride || categoryOf(job),
+      limits: document.getElementById('sv-limits').value.trim(),
+      feed: document.getElementById('sv-feed').value,
+      line: (document.getElementById('sv-line').value || '').trim() ||
+            (name ? name + ', ' + (job || 'do your work') + ', easily.' : ''),
+      daily: parseInt(document.getElementById('sv-daily').value, 10) || 14,
+      weekly: parseInt(document.getElementById('sv-weekly').value, 10) || 2,
+      end: (document.getElementById('sv-end').value || '').trim(),
+      sign: (document.getElementById('sv-sign').value || '').trim(),
+      sealSrc: sealSource,
+      ink: palette.ink, accent: palette.accent,
+    };
+  }
+
+  function generate() {
+    var c = charter();
+    if (!c.name) { document.getElementById('sv-name').focus(); return; }
+    var seed = hashString(c.name + '|' + c.job + '|' + nonce);
+    rng = mulberry32(seed);
+    var spec = CATEGORY[c.domain] || CATEGORY['default'];
+    var archetype = chosenArch || pick(spec.arch);
+    var material = pick(MATERIALS);
+    var behavior = pick(spec.verbs);
+    current = { charter: c, archetype: archetype, material: material, behavior: behavior, seed: seed };
+
+    document.getElementById('sv-out-name').textContent = c.name;
+    document.getElementById('sv-out-desc').textContent =
+      c.name + ' appears as a ' + material + ' ' + ARCH_NOUN[archetype] + ' that ' + behavior + '.';
+    document.getElementById('sv-out-meta').innerHTML =
+      'job: ' + (c.job || '<em>(none given)</em>') + '<br>' +
+      'domain: ' + c.domain + ' · form: ' + ARCH_NOUN[archetype] + '<br>' +
+      'feeds: daily × ' + c.daily + ' days, then ' + c.weekly + '/week';
+
+    renderForm(document.getElementById('sv-form-svg'), archetype, seed, 'main');
+    document.getElementById('sv-output').classList.remove('hidden');
+    document.getElementById('sv-gallery').classList.add('hidden');
+    renderSeal();
+    updateRituals(c);
+  }
+
+  function showAll() {
+    var c = charter();
+    var gallery = document.getElementById('sv-gallery');
+    gallery.innerHTML = '';
+    Object.keys(DRAW).forEach(function (key) {
+      var tile = document.createElement('div');
+      tile.className = 'tile';
+      var svg = el('svg', { viewBox: '0 0 400 400' });
+      renderForm(svg, key, hashString((c.name || 'servitor') + '|' + c.job + '|' + nonce + '|' + key), key);
+      tile.appendChild(svg);
+      var lbl = document.createElement('div');
+      lbl.className = 'lbl';
+      lbl.textContent = ARCH_NOUN[key];
+      tile.appendChild(lbl);
+      tile.addEventListener('click', function () {
+        chosenArch = key;
+        generate();
+      });
+      gallery.appendChild(tile);
+    });
+    gallery.classList.remove('hidden');
+    document.getElementById('sv-output').classList.add('hidden');
+  }
+
+  function updateRituals(c) {
+    document.getElementById('rb-close').textContent =
+      '"You are ' + (c.name || '—') + '. Your work is ' + (c.job || '—') + '. Go and do it."';
+    document.getElementById('rf-line').textContent = '"' + (c.line || '—') + '"';
+    document.getElementById('rf-method').textContent = c.feed;
+    document.getElementById('rr-thank').textContent =
+      '"' + (c.name || '—') + ', your work is done. Thank you."';
+  }
+
+  // ---- grimoire gating ----
+  function grimUnlocked() { return localStorage.getItem('sf-grimoire') === 'yes'; }
+  function openGrim() { document.getElementById('grim-overlay').classList.add('open'); }
+  function gated(fn) {
+    return function () {
+      if (!grimUnlocked()) return openGrim();
+      fn();
+    };
+  }
+
+  // ---- keep: save / ics / svg / print ----
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(function () { t.style.display = 'none'; }, 4500);
+  }
+  function requireCurrent() {
+    if (!current) {
+      document.getElementById('sv-error').textContent = 'Give it form first (step II).';
+      return false;
+    }
+    document.getElementById('sv-error').textContent = '';
+    return true;
+  }
+
+  function loadRoster() {
+    try { return JSON.parse(localStorage.getItem('sf-servitors') || '[]'); }
+    catch (e) { return []; }
+  }
+  function saveRoster(list) {
+    localStorage.setItem('sf-servitors', JSON.stringify(list));
+    renderRoster();
+  }
+  function renderRoster() {
+    var list = loadRoster();
+    var box = document.getElementById('roster');
+    var ul = document.getElementById('roster-list');
+    ul.innerHTML = '';
+    if (!list.length) { box.classList.add('hidden'); return; }
+    box.classList.remove('hidden');
+    list.forEach(function (s) {
+      var chip = document.createElement('span');
+      chip.className = 'roster-chip';
+      var label = document.createElement('span');
+      label.textContent = '✦ ' + s.charter.name;
+      label.title = s.desc;
+      label.addEventListener('click', function () { loadServitor(s); });
+      var x = document.createElement('span');
+      x.className = 'x';
+      x.textContent = '×';
+      x.title = 'Retire ' + s.charter.name;
+      x.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        if (!confirm('Retire ' + s.charter.name + '? Run the retirement ritual first (step IV), then confirm. This deletes it.')) return;
+        saveRoster(loadRoster().filter(function (r) { return r.id !== s.id; }));
+        toast('✦ ' + s.charter.name + ' is released. It is finished. ✦');
+      });
+      chip.appendChild(label);
+      chip.appendChild(x);
+      ul.appendChild(chip);
+    });
+  }
+  function loadServitor(s) {
+    var c = s.charter;
+    document.getElementById('sv-name').value = c.name;
+    document.getElementById('sv-job').value = c.job;
+    document.getElementById('sv-limits').value = c.limits;
+    document.getElementById('sv-feed').value = c.feed;
+    document.getElementById('sv-line').value = c.line;
+    document.getElementById('sv-daily').value = c.daily;
+    document.getElementById('sv-weekly').value = c.weekly;
+    document.getElementById('sv-end').value = c.end;
+    document.getElementById('sv-sign').value = c.sign;
+    domainOverride = c.domain;
+    markDomain();
+    sealSource = c.sealSrc || 'name';
+    markSealSrc();
+    palette.ink = c.ink; palette.accent = c.accent;
+    document.querySelectorAll('#sv-palette .swatch').forEach(function (sw) {
+      sw.classList.toggle('active', sw.getAttribute('data-ink') === c.ink);
+    });
+    chosenArch = s.archetype;
+    nonce = s.nonce || 0;
+    generate();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  var bind = gated(function () {
+    if (!requireCurrent()) return;
+    var list = loadRoster();
+    var id = current.charter.name.toLowerCase() + '-' + current.seed;
+    list = list.filter(function (r) { return r.id !== id; });
+    list.push({
+      id: id,
+      created: new Date().toISOString(),
+      charter: current.charter,
+      archetype: current.archetype,
+      nonce: nonce,
+      desc: document.getElementById('sv-out-desc').textContent,
+    });
+    saveRoster(list);
+    toast('✦ ' + current.charter.name + ' is bound to your roster ✦');
+  });
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function icsDate(d) {
+    return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + 'T210000';
+  }
+  var downloadIcs = gated(function () {
+    if (!requireCurrent()) return;
+    var c = current.charter;
+    var start = new Date();
+    start.setDate(start.getDate() + 1);
+    var weeklyStart = new Date(start);
+    weeklyStart.setDate(weeklyStart.getDate() + c.daily);
+    var days = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+    var byday = [];
+    for (var i = 0; i < Math.min(c.weekly, 7); i++) {
+      byday.push(days[(weeklyStart.getDay() + Math.round(i * 7 / c.weekly)) % 7]);
+    }
+    var lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SigilForge//Servitor//EN',
+      'BEGIN:VEVENT',
+      'UID:sv-daily-' + current.seed + '@sigilforge',
+      'DTSTART:' + icsDate(start),
+      'DURATION:PT5M',
+      'RRULE:FREQ=DAILY;COUNT=' + c.daily,
+      'SUMMARY:Feed ' + c.name,
+      'DESCRIPTION:' + (c.line || 'Glance at the seal. Picture it working. Let go.').replace(/,/g, '\\,'),
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:sv-weekly-' + current.seed + '@sigilforge',
+      'DTSTART:' + icsDate(weeklyStart),
+      'DURATION:PT5M',
+      'RRULE:FREQ=WEEKLY;BYDAY=' + byday.join(',') + ';COUNT=' + (c.weekly * 26),
+      'SUMMARY:Feed ' + c.name,
+      'DESCRIPTION:' + (c.line || 'Glance at the seal. Picture it working. Let go.').replace(/,/g, '\\,'),
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ];
+    var blob = new Blob([lines.join('\r\n')], { type: 'text/calendar' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = c.name.toLowerCase() + '-feeding.ics';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  function saveSvg(id, suffix) {
+    var svg = document.getElementById(id);
+    if (!svg.firstChild) return;
+    var blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = ((current && current.charter.name) || 'servitor').toLowerCase() + '-' + suffix + '.svg';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  var saveForm = gated(function () { if (requireCurrent()) saveSvg('sv-form-svg', 'form'); });
+  var saveSeal = gated(function () { if (requireCurrent()) saveSvg('sv-seal-svg', 'seal'); });
+
+  var printCharter = gated(function () {
+    if (!requireCurrent()) return;
+    var c = current.charter;
+    var sheet = document.getElementById('print-sheet');
+    function row(label, val) {
+      return '<div class="prow"><span class="plabel">' + label + '</span><br>' + (val || '—') + '</div>';
+    }
+    sheet.innerHTML =
+      '<h2>Charter of ' + c.name + '</h2>' +
+      '<div class="pglyphs">' +
+        '<div>' + document.getElementById('sv-form-svg').outerHTML + '</div>' +
+        '<div>' + document.getElementById('sv-seal-svg').outerHTML + '</div>' +
+      '</div>' +
+      row('One job', c.job) +
+      row('Domain', c.domain) +
+      row('Form', document.getElementById('sv-out-desc').textContent) +
+      row('Limits', c.limits.replace(/\n/g, '<br>')) +
+      row('Feed', c.feed + ' — daily for ' + c.daily + ' days, then ' + c.weekly + '/week') +
+      row('Spoken line', c.line) +
+      row('Lifespan / end condition', c.end) +
+      row('The sign it landed', c.sign);
+    window.print();
+  });
+
+  // ---- wiring ----
+  document.getElementById('sv-generate').addEventListener('click', function () { nonce = 0; chosenArch = null; generate(); });
+  document.getElementById('sv-reroll').addEventListener('click', function () {
+    nonce++;
+    chosenArch = null;
+    if (!document.getElementById('sv-gallery').classList.contains('hidden')) showAll();
+    else generate();
+  });
+  document.getElementById('sv-showall').addEventListener('click', showAll);
+  document.getElementById('sv-bind').addEventListener('click', bind);
+  document.getElementById('sv-ics').addEventListener('click', downloadIcs);
+  document.getElementById('sv-save-form').addEventListener('click', saveForm);
+  document.getElementById('sv-save-seal').addEventListener('click', saveSeal);
+  document.getElementById('sv-print').addEventListener('click', printCharter);
+
+  ['sv-name', 'sv-job'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', function () {
+      renderSeal();
+    });
+    document.getElementById(id).addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { nonce = 0; chosenArch = null; generate(); }
+    });
+  });
+  ['sv-line', 'sv-feed'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', function () { if (current) updateRituals(charter()); });
+  });
+
+  var domainOverrideChips = document.querySelectorAll('#sv-domain .chip');
+  function markDomain() {
+    var d = domainOverride || categoryOf(document.getElementById('sv-job').value);
+    domainOverrideChips.forEach(function (ch) { ch.classList.toggle('on', ch.getAttribute('data-v') === d); });
+  }
+  domainOverrideChips.forEach(function (ch) {
+    ch.addEventListener('click', function () {
+      var v = ch.getAttribute('data-v');
+      domainOverride = (domainOverride === v) ? null : v;
+      markDomain();
+      if (current) { chosenArch = null; generate(); }
+    });
+  });
+  document.getElementById('sv-job').addEventListener('input', markDomain);
+  markDomain();
+
+  var sealSource = 'name';
+  var sealChips = document.querySelectorAll('#sv-sealsrc .chip');
+  function markSealSrc() {
+    sealChips.forEach(function (ch) { ch.classList.toggle('on', ch.getAttribute('data-v') === sealSource); });
+  }
+  sealChips.forEach(function (ch) {
+    ch.addEventListener('click', function () {
+      sealSource = ch.getAttribute('data-v');
+      markSealSrc();
+      renderSeal();
+    });
+  });
+
+  var swatches = document.querySelectorAll('#sv-palette .swatch');
+  swatches.forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      swatches.forEach(function (s) { s.classList.remove('active'); });
+      sw.classList.add('active');
+      palette.ink = sw.getAttribute('data-ink');
+      palette.accent = sw.getAttribute('data-accent');
+      if (!document.getElementById('sv-gallery').classList.contains('hidden')) showAll();
+      else if (current) generate();
+    });
+  });
+
+  renderRoster();
+  renderSeal();
+
+  // ---- grimoire modal ----
+  var GRIM_API = 'https://www.mailamix.com/api';
+  var overlay = document.getElementById('grim-overlay');
+  document.getElementById('grim-cancel').addEventListener('click', function () { overlay.classList.remove('open'); });
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
+
+  document.getElementById('grim-buy').addEventListener('click', function () {
+    var err = document.getElementById('grim-error');
+    err.textContent = '';
+    var email = document.getElementById('grim-email').value.trim();
+    if (!email || email.indexOf('@') < 1) { err.textContent = 'Enter your email — your unlock code is sent there.'; return; }
+    var btn = document.getElementById('grim-buy');
+    btn.disabled = true; btn.textContent = 'Summoning checkout…';
+    fetch(GRIM_API + '/grimoire-checkout', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email }),
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.d.url) throw new Error(res.d.error || 'Checkout failed');
+        window.location.href = res.d.url;
+      })
+      .catch(function (e) {
+        err.textContent = e.message;
+        btn.disabled = false; btn.textContent = 'Unlock — $4.99 →';
+      });
+  });
+
+  document.getElementById('grim-redeem').addEventListener('click', function () {
+    var err = document.getElementById('grim-error');
+    err.textContent = '';
+    var code = document.getElementById('grim-code').value.trim().toUpperCase();
+    if (!code) { err.textContent = 'Enter your code.'; return; }
+    fetch(GRIM_API + '/grimoire-verify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: code }),
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.d.valid) throw new Error(res.d.error || 'That code was not recognized.');
+        localStorage.setItem('sf-grimoire', 'yes');
+        localStorage.setItem('sf-grimoire-code', code);
+        overlay.classList.remove('open');
+        toast('✦ The Grimoire is open ✦');
+      })
+      .catch(function (e) { err.textContent = e.message; });
+  });
+})();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+(function () {
+  var btns = document.querySelectorAll('#theme-pick button');
+  function mark() {
+    var cur = localStorage.getItem('sf-theme') || '';
+    btns.forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-t') === cur); });
+  }
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.getAttribute('data-t');
+      if (t) { localStorage.setItem('sf-theme', t); document.documentElement.setAttribute('data-theme', t); }
+      else { localStorage.removeItem('sf-theme'); document.documentElement.removeAttribute('data-theme'); }
+      mark();
+    });
+  });
+  mark();
+})();
+</script>
+</body>
+</html>

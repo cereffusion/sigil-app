@@ -17,6 +17,8 @@
 <script>
   (function () {
     var t = localStorage.getItem('sf-theme');
+    var prem = { parchment: 1, void: 1, witch: 1 };
+    if (t && prem[t] && localStorage.getItem('sf-grimoire') !== 'yes') t = null;
     if (t) document.documentElement.setAttribute('data-theme', t);
   })();
 </script>
@@ -41,6 +43,44 @@
     --bg: #0d0a12; --bg2: #1a1024; --panel: #16101e; --ink: #f4eaff;
     --gold: #ff2d95; --dim: #7a6a8a; --line: #2e2040; --line2: #46305e;
     --font: 'Courier New', Courier, monospace;
+  }
+  /* grimoire themes */
+  :root[data-theme="parchment"] {
+    --bg: #e6d8b8; --bg2: #f6eedb; --panel: #efe4c8; --ink: #2b1d14;
+    --gold: #9a2a1e; --dim: #6e5c44; --line: #d2c09a; --line2: #b8a07a;
+    --font: 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  }
+  :root[data-theme="void"] {
+    --bg: #000000; --bg2: #060606; --panel: #0a0a0a; --ink: #ece8dc;
+    --gold: #ece8dc; --dim: #6a6a6a; --line: #1c1c1c; --line2: #2c2c2c;
+    --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+  :root[data-theme="witch"] {
+    --bg: #0e0614; --bg2: #2a0f36; --panel: #170a20; --ink: #efe6f5;
+    --gold: #b6ff3a; --dim: #8a6a96; --line: #34163f; --line2: #4e2160;
+    --font: 'Courier New', Courier, monospace;
+  }
+  :root[data-theme="witch"] h1 {
+    text-shadow: 2px 0 rgba(255,45,149,0.65), -2px 0 rgba(58,255,216,0.55);
+    animation: sfGlitch 5s steps(1) infinite;
+  }
+  @keyframes sfGlitch {
+    0%, 92%, 100% { transform: none; }
+    93% { transform: translate(2px, -1px) skewX(-6deg); }
+    95% { transform: translate(-2px, 1px); }
+    97% { transform: translate(1px, 0) skewX(4deg); }
+  }
+  @media (prefers-reduced-motion: reduce) { :root[data-theme="witch"] h1 { animation: none; } }
+  .theme-pick .sep { width: 1px; background: var(--line2); margin: 2px 2px; }
+  .theme-pick button.prem.locked { opacity: 0.55; }
+  .theme-hint {
+    position: fixed; top: 44px; right: 16px; z-index: 81; display: none;
+    background: var(--panel); color: var(--ink); border: 1px solid var(--line2);
+    font-size: 0.72rem; letter-spacing: 0.08em; padding: 0.55rem 0.8rem; border-radius: 4px;
+  }
+  .theme-hint a, .theme-hint button {
+    color: var(--gold); background: none; border: none; font: inherit; cursor: pointer;
+    text-decoration: underline; padding: 0; margin-left: 0.4rem;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -428,6 +468,10 @@ does not act on any specific named person
   <button data-t="" style="background:#c9a84c" title="Midnight"></button>
   <button data-t="moon" style="background:#c8d0dc" title="Moon Phase"></button>
   <button data-t="neon" style="background:#ff2d95" title="Ritual Neon"></button>
+  <span class="sep"></span>
+  <button class="prem" data-t="parchment" style="background:linear-gradient(135deg,#f6eedb 50%,#9a2a1e 50%)" title="Parchment · Grimoire"></button>
+  <button class="prem" data-t="void" style="background:#000;box-shadow:inset 0 0 0 1px #ece8dc" title="Void Black · Grimoire"></button>
+  <button class="prem" data-t="witch" style="background:linear-gradient(135deg,#2a0f36 50%,#b6ff3a 50%)" title="Witch House · Grimoire"></button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1418,19 +1462,58 @@ does not act on any specific named person
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 
 (function () {
+  // Grimoire themes: anyone can preview one; only unlocked users keep it
+  var PREM = { parchment: 1, void: 1, witch: 1 };
   var btns = document.querySelectorAll('#theme-pick button');
+  function unlocked() { return localStorage.getItem('sf-grimoire') === 'yes'; }
+  function current() { return document.documentElement.getAttribute('data-theme') || ''; }
+  function apply(t) {
+    if (t) document.documentElement.setAttribute('data-theme', t);
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  var hint = document.createElement('div');
+  hint.className = 'theme-hint';
+  document.body.appendChild(hint);
+  function showHint() {
+    hint.innerHTML = 'Grimoire theme preview';
+    var go;
+    if (window.sfGrim) {
+      go = document.createElement('button');
+      go.addEventListener('click', function () { hint.style.display = 'none'; window.sfGrim.open(); });
+    } else {
+      go = document.createElement('a');
+      go.href = 'index.html?unlock=1';
+    }
+    go.textContent = 'Keep it · $1.49';
+    hint.appendChild(go);
+    hint.style.display = 'block';
+  }
   function mark() {
-    var cur = localStorage.getItem('sf-theme') || '';
-    btns.forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-t') === cur); });
+    var cur = current(), u = unlocked();
+    btns.forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-t') === cur);
+      b.classList.toggle('locked', !!PREM[b.getAttribute('data-t')] && !u);
+    });
   }
   btns.forEach(function (b) {
     b.addEventListener('click', function () {
       var t = b.getAttribute('data-t');
-      if (t) { localStorage.setItem('sf-theme', t); document.documentElement.setAttribute('data-theme', t); }
-      else { localStorage.removeItem('sf-theme'); document.documentElement.removeAttribute('data-theme'); }
+      apply(t);
+      if (PREM[t] && !unlocked()) { showHint(); mark(); return; } // preview only, not saved
+      hint.style.display = 'none';
+      if (t) localStorage.setItem('sf-theme', t); else localStorage.removeItem('sf-theme');
       mark();
     });
   });
+  // called after a successful unlock: keep whatever theme is being previewed
+  window.sfTheme = {
+    commit: function () {
+      var t = current();
+      if (t) localStorage.setItem('sf-theme', t);
+      hint.style.display = 'none';
+      mark();
+    }
+  };
   mark();
 })();
 </script>

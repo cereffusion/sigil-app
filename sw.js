@@ -1,4 +1,4 @@
-const CACHE = 'sigil-forge-v5'
+const CACHE = 'sigil-forge-v6'
 const ASSETS = [
   '/',
   '/index.html',

@@ -18,6 +18,8 @@
 <script>
   (function () {
     var t = localStorage.getItem('sf-theme');
+    var prem = { parchment: 1, void: 1, witch: 1 };
+    if (t && prem[t] && localStorage.getItem('sf-grimoire') !== 'yes') t = null;
     if (t) document.documentElement.setAttribute('data-theme', t);
   })();
 </script>
@@ -42,6 +44,44 @@
     --bg: #0d0a12; --bg2: #1a1024; --panel: #16101e; --ink: #f4eaff;
     --gold: #ff2d95; --dim: #7a6a8a; --line: #2e2040; --line2: #46305e;
     --font: 'Courier New', Courier, monospace;
+  }
+  /* grimoire themes */
+  :root[data-theme="parchment"] {
+    --bg: #e6d8b8; --bg2: #f6eedb; --panel: #efe4c8; --ink: #2b1d14;
+    --gold: #9a2a1e; --dim: #6e5c44; --line: #d2c09a; --line2: #b8a07a;
+    --font: 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  }
+  :root[data-theme="void"] {
+    --bg: #000000; --bg2: #060606; --panel: #0a0a0a; --ink: #ece8dc;
+    --gold: #ece8dc; --dim: #6a6a6a; --line: #1c1c1c; --line2: #2c2c2c;
+    --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+  :root[data-theme="witch"] {
+    --bg: #0e0614; --bg2: #2a0f36; --panel: #170a20; --ink: #efe6f5;
+    --gold: #b6ff3a; --dim: #8a6a96; --line: #34163f; --line2: #4e2160;
+    --font: 'Courier New', Courier, monospace;
+  }
+  :root[data-theme="witch"] h1 {
+    text-shadow: 2px 0 rgba(255,45,149,0.65), -2px 0 rgba(58,255,216,0.55);
+    animation: sfGlitch 5s steps(1) infinite;
+  }
+  @keyframes sfGlitch {
+    0%, 92%, 100% { transform: none; }
+    93% { transform: translate(2px, -1px) skewX(-6deg); }
+    95% { transform: translate(-2px, 1px); }
+    97% { transform: translate(1px, 0) skewX(4deg); }
+  }
+  @media (prefers-reduced-motion: reduce) { :root[data-theme="witch"] h1 { animation: none; } }
+  .theme-pick .sep { width: 1px; background: var(--line2); margin: 2px 2px; }
+  .theme-pick button.prem.locked { opacity: 0.55; }
+  .theme-hint {
+    position: fixed; top: 44px; right: 16px; z-index: 81; display: none;
+    background: var(--panel); color: var(--ink); border: 1px solid var(--line2);
+    font-size: 0.72rem; letter-spacing: 0.08em; padding: 0.55rem 0.8rem; border-radius: 4px;
+  }
+  .theme-hint a, .theme-hint button {
+    color: var(--gold); background: none; border: none; font: inherit; cursor: pointer;
+    text-decoration: underline; padding: 0; margin-left: 0.4rem;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -242,7 +282,7 @@
   }
   .grim-row {
     display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
-    gap: 0.55rem; margin: -0.4rem 0 1.2rem; max-width: 520px;
+    gap: 0.55rem; margin: -0.4rem 0 1.2rem; max-width: 560px;
   }
   .grim-title {
     font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
@@ -334,6 +374,16 @@
   <button class="swatch grim" data-ink="uv" style="background:#c86aff;box-shadow:0 0 8px rgba(200,106,255,0.8)" title="UV Glow"></button>
   <button class="swatch grim" data-ink="smoke" style="background:linear-gradient(135deg,#b8b2c8,#7a7290 55%,#4a4458)" title="Smoke"></button>
   <button class="swatch grim" data-ink="verdigris" style="background:linear-gradient(135deg,#8ad8c0,#3a9a80 50%,#1a5a4a)" title="Verdigris"></button>
+  <button class="swatch grim" data-ink="bone" style="background:linear-gradient(135deg,#fbf6e8,#e8dcc0 55%,#cbb994);box-shadow:inset 0 0 0 2px #15131e,inset 0 0 0 3px #efe3c4" title="Bone"></button>
+  <button class="swatch grim" data-ink="mercury" style="background:linear-gradient(135deg,#e8ecf4,#7a8296 30%,#ffffff 50%,#5a6274 75%,#c8ced8)" title="Mercury"></button>
+  <button class="swatch grim" data-ink="wax" style="background:radial-gradient(circle at 35% 30%,#ff8a8a 0,#c8242c 25%,#6a0810 100%)" title="Hex Red Wax"></button>
+  <button class="swatch grim" data-ink="moonwater" style="background:radial-gradient(circle,#f4fbff,#bfe0f4 45%,#8ab8d8);box-shadow:0 0 7px rgba(170,215,245,0.6)" title="Moonwater"></button>
+  <button class="swatch grim" data-ink="mycelium" style="background:linear-gradient(135deg,#9a9468,#6e6a44 55%,#4e4a2c)" title="Mycelium"></button>
+  <button class="swatch grim" data-ink="irongall" style="background:radial-gradient(circle,#2b1d14 42%,#a0522d)" title="Iron Gall"></button>
+  <button class="swatch grim" data-ink="obsidian" style="background:radial-gradient(circle at 30% 28%,#6a6480 0,#08070c 38%);box-shadow:inset 0 0 0 1px #4c4762" title="Obsidian"></button>
+  <button class="swatch grim" data-ink="honey" style="background:linear-gradient(135deg,#ffe08a,#f0a828 55%,#b86a0a)" title="Honey Amber"></button>
+  <button class="swatch grim" data-ink="aurora" style="background:linear-gradient(180deg,#7affc0,#3ad8b0 35%,#7a6aff 70%,#c08aff)" title="Aurora"></button>
+  <button class="swatch grim" data-ink="ash" style="background:linear-gradient(135deg,#d4d0d8,#8e8a94 55%,#55525c)" title="Ash"></button>
   <span class="grim-state" id="grim-state"></span>
 </div>
 
@@ -431,6 +481,7 @@
   // ---- Grimoire effect inks ----
   // Premium stroke styles: gradient (or glow) strokes plus a particle layer.
   // Free "glitter" uses the same machinery and stays free as the teaser.
+  var PLATE = '#15131e'; // the sigil's background plate; "cut-out" layers paint in this color
   var EFFECT_INKS = {
     goldleaf: {
       label: 'Gold Leaf', accent: '#8a6d2f',
@@ -471,6 +522,60 @@
       label: 'Verdigris', accent: '#3a9a80',
       grad: [['0%','#8ad8c0'],['40%','#3a9a80'],['100%','#1a5a4a']],
       sparkle: { colors: ['#1a5a4a','#8ad8c0','#c8a86a'], n: 18, star: 0, tiny: true }
+    },
+    // ---- second folio: layered inks (see applyInkLayers) ----
+    bone: {
+      label: 'Bone', accent: '#a8946a',
+      grad: [['0%','#fbf6e8'],['50%','#e8dcc0'],['100%','#cbb994']],
+      under: [{ stroke: '#efe3c4', add: 4.2, opacity: 0.85 }, { stroke: PLATE, add: 2.2 }],
+      over: [{ stroke: PLATE, add: 0.6, dash: '1.4 19', cap: 'butt' }]
+    },
+    mercury: {
+      label: 'Mercury', accent: '#8a92a4',
+      grad: [['0%','#e8ecf4'],['22%','#7a8296'],['40%','#ffffff'],['58%','#5a6274'],['80%','#c8ced8'],['100%','#8a92a4']],
+      over: [{ stroke: '#ffffff', mul: 0.28, opacity: 0.75 }],
+      beads: true
+    },
+    wax: {
+      label: 'Hex Red Wax', accent: '#7a1218',
+      grad: [['0%','#c8242c'],['55%','#9a1018'],['100%','#6a0810']],
+      widthMul: 1.7, blobs: true
+    },
+    moonwater: {
+      label: 'Moonwater', accent: '#6a98b8',
+      grad: [['0%','#f4fbff'],['50%','#bfe0f4'],['100%','#8ab8d8']],
+      glow: 'rgba(170,215,245,0.45)', filter: 'fxRipple', rings: true
+    },
+    mycelium: {
+      label: 'Mycelium', accent: '#6e6a44',
+      grad: [['0%','#9a9468'],['50%','#6e6a44'],['100%','#4e4a2c']],
+      threads: true
+    },
+    irongall: {
+      label: 'Iron Gall', accent: '#7a3a1a',
+      solid: '#3a2618',
+      under: [{ stroke: '#a0522d', add: 3.5, opacity: 0.6, filter: 'fxFeather' }]
+    },
+    obsidian: {
+      label: 'Obsidian', accent: '#3a3650',
+      solid: '#08070c', glow: 'rgba(150,140,190,0.25)',
+      under: [{ stroke: '#76709a', add: 2.6, opacity: 1 }],
+      over: [{ stroke: '#ffffff', mul: 0.25, opacity: 0.7, dash: '14 26' }]
+    },
+    honey: {
+      label: 'Honey Amber', accent: '#b8780a',
+      grad: [['0%','#ffe08a'],['45%','#f0a828'],['100%','#b86a0a']],
+      strokeOpacity: 0.82, glow: 'rgba(240,168,40,0.35)', bubbles: true
+    },
+    aurora: {
+      label: 'Aurora', accent: '#5a8ad8',
+      grad: [['0%','#7affc0'],['35%','#3ad8b0'],['70%','#7a6aff'],['100%','#c08aff']],
+      glow: 'rgba(122,255,192,0.35)', curtains: true, shimmer: true
+    },
+    ash: {
+      label: 'Ash', accent: '#6a6670',
+      grad: [['0%','#d4d0d8'],['50%','#8e8a94'],['100%','#55525c']],
+      fadeEnds: true, cinders: true
     }
   };
 
@@ -482,7 +587,6 @@
     svg.style.filter = '';
     var fx = EFFECT_INKS[state.ink];
     if (fx) {
-      if (fx.glow) svg.style.filter = 'drop-shadow(0 0 7px ' + fx.glow + ')';
       if (fx.solid) return fx.solid;
       var defsE = svgEl('defs', {});
       var gradE = svgEl('linearGradient', {
@@ -491,6 +595,11 @@
       fx.grad.forEach(function (s) {
         gradE.appendChild(svgEl('stop', { offset: s[0], 'stop-color': s[1] }));
       });
+      if (fx.shimmer) {
+        // slow drift of the gradient across each stroke (static in prints)
+        gradE.appendChild(svgEl('animate', { attributeName: 'x1', values: '0%;45%;0%', dur: '7s', repeatCount: 'indefinite' }));
+        gradE.appendChild(svgEl('animate', { attributeName: 'x2', values: '100%;145%;100%', dur: '7s', repeatCount: 'indefinite' }));
+      }
       defsE.appendChild(gradE);
       svg.appendChild(defsE);
       return 'url(#fxGrad)';
@@ -509,10 +618,245 @@
     return 'url(#glitterGrad)';
   }
 
+  // ---- layered-ink helpers (second folio) ----
+  // Everything here is plain SVG (gradients, filters, shapes): no href, no
+  // script, so exports and the mailed-postcard sanitizer accept it as is.
+  var FX_FILTERS = {
+    fxRipple: [
+      ['feTurbulence', { type: 'turbulence', baseFrequency: '0.018', numOctaves: 1, seed: 3, result: 't' }],
+      ['feDisplacementMap', { in: 'SourceGraphic', in2: 't', scale: 5, xChannelSelector: 'R', yChannelSelector: 'G' }]
+    ],
+    fxFeather: [
+      ['feTurbulence', { type: 'fractalNoise', baseFrequency: '0.9', numOctaves: 1, seed: 7, result: 'n' }],
+      ['feDisplacementMap', { in: 'SourceGraphic', in2: 'n', scale: 3, xChannelSelector: 'R', yChannelSelector: 'G', result: 'd' }],
+      ['feGaussianBlur', { in: 'd', stdDeviation: 1.4 }]
+    ]
+  };
+  function fxDefs(svg) {
+    var d = svg.querySelector('defs');
+    if (!d) { d = svgEl('defs', {}); svg.insertBefore(d, svg.firstChild.nextSibling); }
+    return d;
+  }
+  function ensureFilter(svg, id) {
+    if (svg.querySelector('#' + id)) return;
+    // user-space region: a bounding-box region collapses to nothing on
+    // perfectly straight strokes and the stroke would vanish
+    var f = svgEl('filter', { id: id, filterUnits: 'userSpaceOnUse', x: 0, y: 0, width: SIZE, height: SIZE });
+    FX_FILTERS[id].forEach(function (p) { f.appendChild(svgEl(p[0], p[1])); });
+    fxDefs(svg).appendChild(f);
+  }
+  function inkStrokes(svg, ink) {
+    return Array.prototype.filter.call(svg.querySelectorAll('[stroke]'), function (el) {
+      return el.getAttribute('stroke') === ink;
+    });
+  }
+  function strokeW(el) { return parseFloat(el.getAttribute('stroke-width')) || 2; }
+  function layerClone(svg, el, L) {
+    var c = el.cloneNode(true);
+    c.removeAttribute('style'); // drop the draw-on dash animation
+    c.setAttribute('stroke', L.stroke);
+    c.setAttribute('stroke-width', Math.max(0.3, strokeW(el) * (L.mul || 1) + (L.add || 0)).toFixed(2));
+    var baseOp = parseFloat(el.getAttribute('opacity'));
+    if (isNaN(baseOp)) baseOp = 1;
+    c.setAttribute('opacity', ((L.opacity == null ? 1 : L.opacity) * baseOp).toFixed(3));
+    c.removeAttribute('stroke-opacity');
+    c.removeAttribute('filter');
+    if (L.dash) c.setAttribute('stroke-dasharray', L.dash);
+    if (L.cap) c.setAttribute('stroke-linecap', L.cap);
+    if (L.filter) { ensureFilter(svg, L.filter); c.setAttribute('filter', 'url(#' + L.filter + ')'); }
+    return c;
+  }
+  // sample points along the sigil's stroke paths (rose wheel: M..L / M..Q..)
+  function strokePoints(strokes, step) {
+    var pts = [];
+    strokes.forEach(function (el) {
+      if (el.tagName.toLowerCase() !== 'path') return;
+      var n = (el.getAttribute('d') || '').match(/-?\d+(\.\d+)?/g);
+      if (!n) return;
+      n = n.map(Number);
+      var x0 = n[0], y0 = n[1], qx, qy, x1, y1;
+      if (n.length >= 6) { qx = n[2]; qy = n[3]; x1 = n[4]; y1 = n[5]; }
+      else if (n.length >= 4) { x1 = n[2]; y1 = n[3]; qx = (x0 + x1) / 2; qy = (y0 + y1) / 2; }
+      else return;
+      var len = Math.hypot(x1 - x0, y1 - y0) + 1;
+      var k = Math.max(2, Math.round(len / step));
+      for (var i = 0; i <= k; i++) {
+        var t = i / k, u = 1 - t;
+        pts.push({ x: u * u * x0 + 2 * u * t * qx + t * t * x1, y: u * u * y0 + 2 * u * t * qy + t * t * y1 });
+      }
+    });
+    if (!pts.length) {
+      // letter-overlay method has no paths: scatter within the letterforms' reach
+      for (var j = 0; j < 40; j++) {
+        var a = Math.random() * Math.PI * 2, r = Math.random() * 130;
+        pts.push({ x: CX + r * Math.cos(a), y: CY + r * Math.sin(a) });
+      }
+    }
+    return pts;
+  }
+  function pathEnds(strokes) {
+    var paths = strokes.filter(function (el) { return el.tagName.toLowerCase() === 'path'; });
+    if (!paths.length) return [{ x: CX, y: CY }];
+    var first = paths[0].getAttribute('d').match(/-?\d+(\.\d+)?/g).map(Number);
+    var last = paths[paths.length - 1].getAttribute('d').match(/-?\d+(\.\d+)?/g).map(Number);
+    return [{ x: first[0], y: first[1] }, { x: last[last.length - 2], y: last[last.length - 1] }];
+  }
+  function insideFrame(x, y) { return Math.hypot(x - CX, y - CY) < 245; }
+
+  // colored glow around the marks only: wrap everything except the plate,
+  // defs and frame rings in one group with an SVG glow filter
+  function applyGlow(svg, color) {
+    var m = /rgba?\(([^)]+)\)/.exec(color), rgb = color, a = 0.6;
+    if (m) { var c = m[1].split(','); rgb = 'rgb(' + c.slice(0, 3).join(',') + ')'; if (c[3]) a = parseFloat(c[3]); }
+    var f = svgEl('filter', { id: 'fxGlow', filterUnits: 'userSpaceOnUse', x: 0, y: 0, width: SIZE, height: SIZE });
+    f.appendChild(svgEl('feGaussianBlur', { in: 'SourceAlpha', stdDeviation: 3.5, result: 'b' }));
+    f.appendChild(svgEl('feFlood', { 'flood-color': rgb, 'flood-opacity': a, result: 'f' }));
+    f.appendChild(svgEl('feComposite', { in: 'f', in2: 'b', operator: 'in', result: 'g' }));
+    var mg = svgEl('feMerge', {});
+    mg.appendChild(svgEl('feMergeNode', { in: 'g' }));
+    mg.appendChild(svgEl('feMergeNode', { in: 'SourceGraphic' }));
+    f.appendChild(mg);
+    fxDefs(svg).appendChild(f);
+    var g = svgEl('g', { filter: 'url(#fxGlow)' });
+    Array.prototype.slice.call(svg.childNodes).forEach(function (n) {
+      var tag = (n.tagName || '').toLowerCase();
+      if (n === svg.firstChild || tag === 'defs' || (n.getAttribute && n.getAttribute('class') === 'frame')) return;
+      g.appendChild(n);
+    });
+    svg.appendChild(g);
+  }
+
+  function applyInkLayers(svg, fx) {
+    var ink = fx.solid || 'url(#fxGrad)';
+    var strokes = inkStrokes(svg, ink);
+    if (!strokes.length) return;
+
+    if (fx.widthMul) strokes.forEach(function (el) {
+      el.setAttribute('stroke-width', (strokeW(el) * fx.widthMul).toFixed(2));
+    });
+    if (fx.strokeOpacity) strokes.forEach(function (el) { el.setAttribute('stroke-opacity', fx.strokeOpacity); });
+    if (fx.fadeEnds) {
+      // strongest in the middle of the drawing, thinning to smoke at both ends
+      var n = strokes.length;
+      strokes.forEach(function (el, i) {
+        var base = parseFloat(el.getAttribute('opacity'));
+        if (isNaN(base)) base = 1;
+        var f = n < 2 ? 0.85 : 0.35 + 0.65 * Math.sin(Math.PI * (i + 0.5) / n);
+        el.setAttribute('opacity', (base * f).toFixed(3));
+      });
+    }
+    if (fx.filter) {
+      ensureFilter(svg, fx.filter);
+      strokes.forEach(function (el) { el.setAttribute('filter', 'url(#' + fx.filter + ')'); });
+    }
+    strokes.forEach(function (el) {
+      (fx.under || []).forEach(function (L) { el.parentNode.insertBefore(layerClone(svg, el, L), el); });
+      var anchor = el.nextSibling;
+      (fx.over || []).forEach(function (L) { el.parentNode.insertBefore(layerClone(svg, el, L), anchor); });
+    });
+
+    var firstStroke = svg.querySelector('[stroke="' + (fx.under ? (fx.under[0].stroke) : ink) + '"]') || strokes[0];
+    var pts;
+
+    if (fx.curtains) {
+      // aurora curtains hang BEHIND the sigil
+      var cg = svgEl('linearGradient', { id: 'fxCurtain', x1: '0%', y1: '0%', x2: '0%', y2: '100%' });
+      [['0%', '#7affc0', 0], ['30%', '#7affc0', 0.9], ['70%', '#8a6aff', 0.7], ['100%', '#c08aff', 0]].forEach(function (s) {
+        cg.appendChild(svgEl('stop', { offset: s[0], 'stop-color': s[1], 'stop-opacity': s[2] }));
+      });
+      fxDefs(svg).appendChild(cg);
+      for (var c = 0; c < 14; c++) {
+        var cx = 120 + Math.random() * 360, h = 170 + Math.random() * 200;
+        svg.insertBefore(svgEl('rect', {
+          x: cx.toFixed(1), y: (CY - h * 0.6).toFixed(1), width: (3 + Math.random() * 7).toFixed(1), height: h.toFixed(1),
+          rx: 3, fill: 'url(#fxCurtain)', opacity: (0.1 + Math.random() * 0.2).toFixed(2)
+        }), firstStroke);
+      }
+    }
+    if (fx.beads) {
+      var bg = svgEl('radialGradient', { id: 'fxBead', cx: '35%', cy: '35%', r: '65%' });
+      [['0%', '#ffffff'], ['45%', '#b8bece'], ['100%', '#3a4050']].forEach(function (s) {
+        bg.appendChild(svgEl('stop', { offset: s[0], 'stop-color': s[1] }));
+      });
+      fxDefs(svg).appendChild(bg);
+      pts = strokePoints(strokes, 34);
+      pts.forEach(function (p) {
+        if (Math.random() > 0.55) return;
+        var r = 2.2 + Math.random() * 2.4;
+        var off = (Math.random() - 0.5) * 9;
+        svg.appendChild(svgEl('circle', { cx: (p.x + off).toFixed(1), cy: (p.y - off).toFixed(1), r: r.toFixed(2), fill: 'url(#fxBead)' }));
+      });
+    }
+    if (fx.blobs) {
+      pathEnds(strokes).forEach(function (p) {
+        svg.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: 10.5, fill: '#a5121c' }));
+        svg.appendChild(svgEl('circle', { cx: p.x + 5, cy: p.y + 4, r: 6, fill: '#8a0e16' }));
+        svg.appendChild(svgEl('ellipse', { cx: p.x - 3.5, cy: p.y - 3.5, rx: 3.6, ry: 2.2, fill: '#ffffff', opacity: 0.42,
+          transform: 'rotate(-30 ' + (p.x - 3.5) + ' ' + (p.y - 3.5) + ')' }));
+      });
+    }
+    if (fx.rings) {
+      for (var g = 0; g < 6; g++) {
+        var ang = Math.random() * Math.PI * 2, dist = 40 + Math.random() * 180;
+        var rx = CX + dist * Math.cos(ang), ry = CY + dist * Math.sin(ang), r0 = 3 + Math.random() * 5;
+        [0.45, 0.26, 0.12].forEach(function (op, k) {
+          svg.appendChild(svgEl('circle', { cx: rx.toFixed(1), cy: ry.toFixed(1), r: (r0 + k * 6.5).toFixed(1),
+            fill: 'none', stroke: '#cfe8f8', 'stroke-width': 0.8, opacity: op }));
+        });
+      }
+    }
+    if (fx.threads) {
+      pts = strokePoints(strokes, 20);
+      pts.forEach(function (p) {
+        if (Math.random() > 0.55) return;
+        var branches = Math.random() < 0.3 ? 2 : 1;
+        for (var b = 0; b < branches; b++) {
+          var a = Math.random() * Math.PI * 2, x = p.x, y = p.y, d = 'M' + x.toFixed(1) + ' ' + y.toFixed(1);
+          var steps = 3 + Math.floor(Math.random() * 3);
+          for (var s = 0; s < steps; s++) {
+            a += (Math.random() - 0.5) * 1.1;
+            var L = 4 + Math.random() * 8;
+            x += Math.cos(a) * L; y += Math.sin(a) * L;
+            d += ' L' + x.toFixed(1) + ' ' + y.toFixed(1);
+          }
+          svg.appendChild(svgEl('path', { d: d, fill: 'none', stroke: '#c8bc8a', 'stroke-width': 0.55,
+            'stroke-linecap': 'round', opacity: (0.35 + Math.random() * 0.3).toFixed(2) }));
+          if (Math.random() < 0.4) svg.appendChild(svgEl('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: 1.1, fill: '#d8cc98', opacity: 0.6 }));
+        }
+      });
+    }
+    if (fx.bubbles) {
+      pts = strokePoints(strokes, 26);
+      pts.forEach(function (p) {
+        if (Math.random() > 0.35) return;
+        var r = 1.2 + Math.random() * 2.4, x = p.x + (Math.random() - 0.5) * 5, y = p.y + (Math.random() - 0.5) * 5;
+        svg.appendChild(svgEl('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: r.toFixed(2), fill: '#ffe6a8',
+          'fill-opacity': 0.18, stroke: '#fff2c8', 'stroke-width': 0.6, opacity: 0.75 }));
+        svg.appendChild(svgEl('circle', { cx: (x - r * 0.35).toFixed(1), cy: (y - r * 0.35).toFixed(1), r: 0.6, fill: '#ffffff', opacity: 0.8 }));
+      });
+    }
+    if (fx.cinders) {
+      for (var e = 0; e < 30; e++) {
+        var ex = CX + (Math.random() - 0.5) * 420, ey = CY - 80 + Math.random() * 290;
+        if (!insideFrame(ex, ey)) continue;
+        if (Math.random() < 0.3) {
+          svg.appendChild(svgEl('circle', { cx: ex.toFixed(1), cy: ey.toFixed(1), r: (0.8 + Math.random() * 0.9).toFixed(2),
+            fill: '#ff8a3a', opacity: (0.5 + Math.random() * 0.4).toFixed(2) }));
+        } else {
+          var el2 = 2 + Math.random() * 4;
+          svg.appendChild(svgEl('line', { x1: ex.toFixed(1), y1: ey.toFixed(1), x2: (ex + (Math.random() - 0.5) * 1.5).toFixed(1),
+            y2: (ey + el2).toFixed(1), stroke: '#a8a4ae', 'stroke-width': 0.9, 'stroke-linecap': 'round',
+            opacity: (0.25 + Math.random() * 0.35).toFixed(2) }));
+        }
+      }
+    }
+  }
+
   // particle layer for effect inks: sparkles, embers, stars, drips
   function addInkFx(svg) {
     var fx = EFFECT_INKS[state.ink];
     if (!fx) return;
+    applyInkLayers(svg, fx);
     if (fx.sparkle) {
       var sp = fx.sparkle;
       for (var i = 0; i < sp.n; i++) {
@@ -552,6 +896,7 @@
         }));
       }
     }
+    if (fx.glow) applyGlow(svg, fx.glow);
   }
 
   function addSparkles(svg) {
@@ -621,11 +966,11 @@
 
   function makeFrame(svg) {
     svg.appendChild(svgEl('circle', {
-      cx: CX, cy: CY, r: 270, fill: 'none', stroke: state.accent,
+      cx: CX, cy: CY, r: 270, fill: 'none', stroke: state.accent, 'class': 'frame',
       'stroke-width': 1.5, opacity: 0.5
     }));
     svg.appendChild(svgEl('circle', {
-      cx: CX, cy: CY, r: 258, fill: 'none', stroke: state.accent,
+      cx: CX, cy: CY, r: 258, fill: 'none', stroke: state.accent, 'class': 'frame',
       'stroke-width': 0.75, opacity: 0.35
     }));
   }
@@ -1037,10 +1382,11 @@ Your intention phrase is not printed anywhere — the mark keeps its secret.</di
 <div class="mail-overlay" id="grim-overlay">
   <div class="mail-modal">
     <h2>The Grimoire</h2>
-    <div class="mm-sub">Eight effect inks for your sigils and mailed cards — $1.49, once, forever.</div>
+    <div class="mm-sub">Eighteen effect inks and three themes — $1.49, once, forever.</div>
 
     <ul style="color:var(--dim);font-size:0.82rem;line-height:1.9;margin:0 0 1rem 1.1rem;">
-      <li>8 effect inks — Gold Leaf, Ember, Holographic, Starfield, Blood Ritual, UV Glow, Smoke, Verdigris</li>
+      <li>18 effect inks — Gold Leaf, Bone, Mercury, Hex Red Wax, Aurora, Moonwater, Obsidian &amp; 11 more</li>
+      <li>3 themes — Parchment, Void Black, Witch House</li>
       <li>Effect inks print on mailed postcards too</li>
     </ul>
 
@@ -1068,6 +1414,10 @@ Your intention phrase is not printed anywhere — the mark keeps its secret.</di
   <button data-t="" style="background:#c9a84c" title="Midnight"></button>
   <button data-t="moon" style="background:#c8d0dc" title="Moon Phase"></button>
   <button data-t="neon" style="background:#ff2d95" title="Ritual Neon"></button>
+  <span class="sep"></span>
+  <button class="prem" data-t="parchment" style="background:linear-gradient(135deg,#f6eedb 50%,#9a2a1e 50%)" title="Parchment · Grimoire"></button>
+  <button class="prem" data-t="void" style="background:#000;box-shadow:inset 0 0 0 1px #ece8dc" title="Void Black · Grimoire"></button>
+  <button class="prem" data-t="witch" style="background:linear-gradient(135deg,#2a0f36 50%,#b6ff3a 50%)" title="Witch House · Grimoire"></button>
 </div>
 
 <script>
@@ -1075,19 +1425,58 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 
 // ---- theme switcher ----
 (function () {
+  // Grimoire themes: anyone can preview one; only unlocked users keep it
+  var PREM = { parchment: 1, void: 1, witch: 1 };
   var btns = document.querySelectorAll('#theme-pick button');
+  function unlocked() { return localStorage.getItem('sf-grimoire') === 'yes'; }
+  function current() { return document.documentElement.getAttribute('data-theme') || ''; }
+  function apply(t) {
+    if (t) document.documentElement.setAttribute('data-theme', t);
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  var hint = document.createElement('div');
+  hint.className = 'theme-hint';
+  document.body.appendChild(hint);
+  function showHint() {
+    hint.innerHTML = 'Grimoire theme preview';
+    var go;
+    if (window.sfGrim) {
+      go = document.createElement('button');
+      go.addEventListener('click', function () { hint.style.display = 'none'; window.sfGrim.open(); });
+    } else {
+      go = document.createElement('a');
+      go.href = 'index.html?unlock=1';
+    }
+    go.textContent = 'Keep it · $1.49';
+    hint.appendChild(go);
+    hint.style.display = 'block';
+  }
   function mark() {
-    var cur = localStorage.getItem('sf-theme') || '';
-    btns.forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-t') === cur); });
+    var cur = current(), u = unlocked();
+    btns.forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-t') === cur);
+      b.classList.toggle('locked', !!PREM[b.getAttribute('data-t')] && !u);
+    });
   }
   btns.forEach(function (b) {
     b.addEventListener('click', function () {
       var t = b.getAttribute('data-t');
-      if (t) { localStorage.setItem('sf-theme', t); document.documentElement.setAttribute('data-theme', t); }
-      else { localStorage.removeItem('sf-theme'); document.documentElement.removeAttribute('data-theme'); }
+      apply(t);
+      if (PREM[t] && !unlocked()) { showHint(); mark(); return; } // preview only, not saved
+      hint.style.display = 'none';
+      if (t) localStorage.setItem('sf-theme', t); else localStorage.removeItem('sf-theme');
       mark();
     });
   });
+  // called after a successful unlock: keep whatever theme is being previewed
+  window.sfTheme = {
+    commit: function () {
+      var t = current();
+      if (t) localStorage.setItem('sf-theme', t);
+      hint.style.display = 'none';
+      mark();
+    }
+  };
   mark();
 })();
 
@@ -1217,6 +1606,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
         localStorage.setItem('sf-grimoire-code', code);
         overlay.classList.remove('open');
         window.sfGrim.refresh();
+        if (window.sfTheme) window.sfTheme.commit();
         var toast = document.getElementById('toast');
         toast.textContent = '✦ The Grimoire is open ✦';
         toast.style.display = 'block';
@@ -1238,6 +1628,11 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
       .then(function (d) { err.textContent = d.message || 'If a code exists for that email, it has been re-sent.'; })
       .catch(function () { err.textContent = 'Could not reach the server — try again.'; });
   });
+
+  if (new URLSearchParams(location.search).get('unlock') === '1') {
+    history.replaceState(null, '', location.pathname);
+    overlay.classList.add('open');
+  }
 
   if (new URLSearchParams(location.search).get('grimoire') === 'paid') {
     history.replaceState(null, '', location.pathname);

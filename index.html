@@ -936,8 +936,43 @@
     refresh: updateGrimState
   };
 
+  // ---- Draft stash: survive the round trip to Stripe (Grimoire unlock, Mail It) ----
+  var DRAFT_KEY = 'sf-draft';
+  function stashDraft() {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        phrase: document.getElementById('phrase').value,
+        method: state.method, ink: state.ink, accent: state.accent,
+        chaos: state.chaos, nonce: state.nonce, at: Date.now()
+      }));
+    } catch (e) {}
+  }
+  function restoreDraft() {
+    var raw;
+    try { raw = localStorage.getItem(DRAFT_KEY); localStorage.removeItem(DRAFT_KEY); } catch (e) { return false; }
+    if (!raw) return false;
+    var d; try { d = JSON.parse(raw); } catch (e) { return false; }
+    if (!d || !d.phrase || (Date.now() - (d.at || 0)) > 6 * 60 * 60 * 1000) return false;
+    document.getElementById('phrase').value = d.phrase;
+    state.method = d.method === 'overlay' ? 'overlay' : 'rose';
+    state.ink = d.ink || state.ink;
+    state.accent = d.accent || state.accent;
+    state.chaos = Math.max(0, Math.min(100, parseInt(d.chaos, 10) || 0));
+    state.nonce = parseInt(d.nonce, 10) || 0;
+    document.getElementById('btn-rose').classList.toggle('active', state.method === 'rose');
+    document.getElementById('btn-overlay').classList.toggle('active', state.method === 'overlay');
+    document.getElementById('chaos').value = state.chaos;
+    document.getElementById('chaos-val').textContent = state.chaos;
+    swatches.forEach(function (s) { s.classList.toggle('active', s.getAttribute('data-ink') === state.ink); });
+    grimSwatches.forEach(function (s) { s.classList.toggle('active', s.getAttribute('data-ink') === state.ink); });
+    updateGrimState();
+    return true;
+  }
+  window.sfState = { stash: stashDraft };
+
   var incoming = new URLSearchParams(location.search).get('phrase');
   if (incoming) document.getElementById('phrase').value = incoming;
+  else restoreDraft();
   forge();
 })();
 </script>
@@ -1005,7 +1040,6 @@ Your intention phrase is not printed anywhere — the mark keeps its secret.</di
     <ul style="color:var(--dim);font-size:0.82rem;line-height:1.9;margin:0 0 1rem 1.1rem;">
       <li>8 effect inks — Gold Leaf, Ember, Holographic, Starfield, Blood Ritual, UV Glow, Smoke, Verdigris</li>
       <li>Servitor Builder — charter, form &amp; seal, feeding rituals</li>
-      <li>Sigil Library — save and revisit your marks</li>
       <li>Effect inks print on mailed postcards too</li>
     </ul>
 
@@ -1112,6 +1146,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         if (!res.ok || !res.d.url) throw new Error(res.d.error || 'Checkout failed');
+        if (window.sfState) window.sfState.stash();
         window.location.href = res.d.url;
       })
       .catch(function (e) {
@@ -1156,6 +1191,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         if (!res.ok || !res.d.url) throw new Error(res.d.error || 'Checkout failed');
+        if (window.sfState) window.sfState.stash();
         window.location.href = res.d.url;
       })
       .catch(function (e) {

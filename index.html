@@ -777,6 +777,7 @@
     var stage = document.getElementById('stage');
     stage.innerHTML = '';
     stage.appendChild(svg);
+    stashDraft();
   }
 
   // ---- exports ----
@@ -936,7 +937,9 @@
     refresh: updateGrimState
   };
 
-  // ---- Draft stash: survive the round trip to Stripe (Grimoire unlock, Mail It) ----
+  // ---- Draft persistence: the last forged sigil is saved on every render and
+  // restored on every visit, so it survives Stripe round trips, reloads, and
+  // reopening the installed app. ----
   var DRAFT_KEY = 'sf-draft';
   function stashDraft() {
     try {
@@ -949,10 +952,10 @@
   }
   function restoreDraft() {
     var raw;
-    try { raw = localStorage.getItem(DRAFT_KEY); localStorage.removeItem(DRAFT_KEY); } catch (e) { return false; }
+    try { raw = localStorage.getItem(DRAFT_KEY); } catch (e) { return false; }
     if (!raw) return false;
     var d; try { d = JSON.parse(raw); } catch (e) { return false; }
-    if (!d || !d.phrase || (Date.now() - (d.at || 0)) > 6 * 60 * 60 * 1000) return false;
+    if (!d || !d.phrase || (Date.now() - (d.at || 0)) > 30 * 24 * 60 * 60 * 1000) return false;
     document.getElementById('phrase').value = d.phrase;
     state.method = d.method === 'overlay' ? 'overlay' : 'rose';
     state.ink = d.ink || state.ink;

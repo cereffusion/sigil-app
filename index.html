@@ -292,8 +292,7 @@
 <div class="nav" style="margin-bottom:1.4rem;font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;text-align:center;">
   <a href="index.html" style="color:var(--gold);text-decoration:none;">Sigil Forge</a> &nbsp;·&nbsp;
   <a href="invoke.html" style="color:var(--dim);text-decoration:none;">Invocation Guide</a> &nbsp;·&nbsp;
-  <a href="manifest.html" style="color:var(--dim);text-decoration:none;">The Working</a> &nbsp;·&nbsp;
-  <a href="servitor.html" style="color:var(--dim);text-decoration:none;">The Servitor</a>
+  <a href="manifest.html" style="color:var(--dim);text-decoration:none;">The Working</a>
 </div>
 
 <h1>Sigil Forge</h1>
@@ -923,7 +922,7 @@
       el.style.textDecoration = 'none';
       el.style.cursor = 'default';
     } else {
-      el.textContent = isEffectInk() ? 'previewing — unlock to export' : 'unlock · $4.99';
+      el.textContent = isEffectInk() ? 'previewing — unlock to export' : 'unlock · $1.49';
     }
   }
   updateGrimState();
@@ -1038,11 +1037,10 @@ Your intention phrase is not printed anywhere — the mark keeps its secret.</di
 <div class="mail-overlay" id="grim-overlay">
   <div class="mail-modal">
     <h2>The Grimoire</h2>
-    <div class="mm-sub">Effect inks, the servitor builder, your sigil library &amp; more — $4.99, once, forever.</div>
+    <div class="mm-sub">Eight effect inks for your sigils and mailed cards — $1.49, once, forever.</div>
 
     <ul style="color:var(--dim);font-size:0.82rem;line-height:1.9;margin:0 0 1rem 1.1rem;">
       <li>8 effect inks — Gold Leaf, Ember, Holographic, Starfield, Blood Ritual, UV Glow, Smoke, Verdigris</li>
-      <li>Servitor Builder — charter, form &amp; seal, feeding rituals</li>
       <li>Effect inks print on mailed postcards too</li>
     </ul>
 
@@ -1050,7 +1048,7 @@ Your intention phrase is not printed anywhere — the mark keeps its secret.</di
     <input type="email" id="grim-email" placeholder="you@example.com" autocomplete="email">
 
     <div class="mm-actions">
-      <button id="grim-buy">Unlock — $4.99 →</button>
+      <button id="grim-buy">Unlock — $1.49 →</button>
       <button class="secondary" id="grim-cancel">Not now</button>
     </div>
 
@@ -1199,7 +1197,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
       })
       .catch(function (e) {
         err.textContent = e.message;
-        btn.disabled = false; btn.textContent = 'Unlock — $4.99 →';
+        btn.disabled = false; btn.textContent = 'Unlock — $1.49 →';
       });
   });
 
@@ -1251,7 +1249,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   window.addEventListener('pageshow', function () {
     var gb = document.getElementById('grim-buy');
     gb.disabled = false;
-    gb.textContent = 'Unlock — $4.99 →';
+    gb.textContent = 'Unlock — $1.49 →';
     var mp = document.getElementById('mm-pay');
     mp.disabled = false;
     mp.textContent = 'Continue to Payment →';
